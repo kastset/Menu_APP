@@ -3,6 +3,7 @@ package com.example.test.ui.home
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -18,11 +19,15 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -110,78 +115,99 @@ object HomeScreen {
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary
             ),
+            elevation = ButtonDefaults.buttonElevation(8.dp)
 
-            ) {
+        ) {
             Text(text = type, color = MaterialTheme.colorScheme.onPrimary)
         }
     }
 
-}
+    @Composable
+    fun FavouriteDishGrid(navController: NavHostController) {
+        Column {
+            Text(
+                text = "Любимые блюда",
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentWidth(Alignment.CenterHorizontally)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyHorizontalGrid(
+                rows = GridCells.Fixed(1),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp)
+            ) {
+                items(dishes) { dish ->
 
-
-@Composable
-fun FavouriteDishGrid(navController: NavHostController) {
-    Column {
-        Text(
-            text = "Любимые блюда",
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.tertiary,
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentWidth(Alignment.CenterHorizontally)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        LazyHorizontalGrid(
-            rows = GridCells.Fixed(1),
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp)
-        ) {
-            items(dishes) { dish ->
-                DishCard(navController, dish)
+                    DishCard(navController, dish)
+                }
             }
         }
     }
 
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DishCard(navController: NavHostController, dish: Dish) {
-    Card(
-        onClick = {
-            navController.navigate(DishDetailScreen(dish = dish))
-        },
-        modifier = Modifier
-            .size(150.dp, 190.dp)
-            .background(MaterialTheme.colorScheme.background),
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary),
-        elevation = CardDefaults.cardElevation(8.dp)
-    ) {
-        Column(
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun DishCard(navController: NavHostController, dish: Dish) {
+        val image: Painter = painterResource(R.drawable.ic_launcher_background)
+        Card(
+            onClick = {
+                navController.navigate(DishDetailScreen(dish = dish))
+            },
             modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .size(180.dp, 180.dp)
+                .background(MaterialTheme.colorScheme.background),
+            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary),
+            elevation = CardDefaults.cardElevation(8.dp)
         ) {
-            val image: Painter = painterResource(R.drawable.ic_launcher_background)
-            Image(
-                painter = image, contentDescription = dish.name,
+            Box(
                 modifier = Modifier
-                    .size(95.dp)
-                    .padding(bottom = 8.dp)
-            )
-            Text(
-                text = dish.name,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSecondary
-            )
+                    .fillMaxSize()
+//                    .padding(8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                    verticalArrangement = Arrangement.SpaceAround,
+                ) {
+                    Image(
+                        painter = image,
+                        contentDescription = dish.name,
+                        modifier = Modifier
+                            .size(125.dp)
+                            .padding(bottom = 8.dp)
+                    )
+
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth(align = Alignment.CenterHorizontally),
+                        text = dish.name,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSecondary
+                    )
+                }
+
+                IconButton(
+                    onClick = { /*TODO*/ },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(4.dp)
+                        .size(48.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.Favorite,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondary
+                    )
+                }
+            }
         }
     }
 }

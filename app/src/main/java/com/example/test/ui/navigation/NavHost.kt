@@ -38,7 +38,7 @@ fun AppNavHost(navController: NavHostController) {
             typeMap = mapOf(typeOf<Dish>() to NavType.mapper<Dish>())
         ) {
             val dish = it.toRoute<DishDetailScreen>().dish
-            DishDetail(dish, dish.id)
+            DishDetail(dish)
         }
     }
 
