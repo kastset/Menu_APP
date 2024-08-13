@@ -1,6 +1,6 @@
 package com.example.test.ui.dish
 
-import androidx.compose.foundation.Image
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,41 +29,50 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.test.ImageLoader
 import com.example.test.R
 import com.example.test.model.Dish
 import com.example.test.model.dishes
+import com.example.test.ui.theme.TestTheme
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class DishListScreen(val dish: Dish)
 
-
 @Composable
-fun ListOfTypeDish(navController: NavHostController, type: String) {
-  val types = dishes.filter { type == it.type }
+fun ListOfTypeDish(
+    navController: NavHostController,
+    type: String,
+) {
+    val types = dishes.filter { type == it.type }
 
     Column(
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.background)
-            .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp)
-            .statusBarsPadding(),
+        modifier =
+            Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .fillMaxSize()
+                .padding(start = 16.dp, end = 16.dp)
+                .statusBarsPadding(),
     ) {
         Text(
             text = "Список блюд для типа: $type",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.tertiary,
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier =
+                Modifier
+                    .fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(8.dp))
         LazyVerticalGrid(
@@ -71,8 +80,9 @@ fun ListOfTypeDish(navController: NavHostController, type: String) {
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .fillMaxSize()
+            modifier =
+                Modifier
+                    .fillMaxSize(),
         ) {
             items(types) { dish ->
                 ListTypeCard(navController, dish = dish)
@@ -83,123 +93,174 @@ fun ListOfTypeDish(navController: NavHostController, type: String) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListTypeCard(navController: NavHostController, dish: Dish) {
-    val image: Painter = painterResource(R.drawable.ic_launcher_background)
+fun ListTypeCard(
+    navController: NavHostController,
+    dish: Dish,
+) {
     Card(
         onClick = {
             navController.navigate(DishDetailScreen(dish = dish))
         },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(160.dp)
-            .padding(8.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .padding(8.dp),
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary),
-        elevation = CardDefaults.cardElevation(16.dp)
+        elevation = CardDefaults.cardElevation(16.dp),
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier =
+                Modifier
+                    .fillMaxSize(),
         ) {
             Column(
                 modifier = Modifier.align(Alignment.Center),
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Image(
-                    painter = image,
-                    contentDescription = dish.name,
-                    modifier = Modifier
-                        .size(80.dp)
-                        .padding(bottom = 8.dp)
+                ImageLoader(
+                    imageUrl = dish.imageUrl,
+                    modifier =
+                        Modifier
+                            .size(100.dp)
+                            .padding(bottom = 8.dp),
                 )
 
                 Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentWidth(align = Alignment.CenterHorizontally),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth(align = Alignment.CenterHorizontally),
                     text = dish.name,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSecondary
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    textAlign = TextAlign.Center,
                 )
             }
-
             Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .size(48.dp, 100.dp)
-                    .padding(top = 4.dp, end = 4.dp),
+                modifier =
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .size(48.dp, 100.dp)
+                        .padding(top = 4.dp, end = 4.dp),
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize(),
+                    modifier =
+                        Modifier
+                            .fillMaxSize(),
                     verticalArrangement = Arrangement.SpaceAround,
                 ) {
                     IconButton(
                         onClick = { /*TODO*/ },
-                        modifier = Modifier
-                            .wrapContentSize(Alignment.TopEnd)
-                            .size(48.dp)
+                        modifier =
+                            Modifier
+                                .wrapContentSize(Alignment.TopEnd)
+                                .size(48.dp),
                     ) {
                         Icon(
                             Icons.Filled.Favorite,
                             contentDescription = null,
                             modifier = Modifier.size(24.dp),
-                            tint = MaterialTheme.colorScheme.onSecondary
+                            tint = MaterialTheme.colorScheme.onSecondary,
                         )
                     }
 
                     IconButton(
                         onClick = { /*TODO*/ },
-                        modifier = Modifier
-                            .wrapContentSize(Alignment.TopEnd)
-                            .size(48.dp)
+                        modifier =
+                            Modifier
+                                .wrapContentSize(Alignment.TopEnd)
+                                .size(48.dp),
                     ) {
                         Icon(
                             Icons.Filled.Star,
                             contentDescription = null,
-                            modifier = Modifier
-                                .size(24.dp)
-                                .wrapContentSize(Alignment.Center)
-                                .background(MaterialTheme.colorScheme.secondary),
-                            tint = MaterialTheme.colorScheme.onSecondary
+                            modifier =
+                                Modifier
+                                    .size(24.dp)
+                                    .wrapContentSize(Alignment.Center)
+                                    .background(MaterialTheme.colorScheme.secondary),
+                            tint = MaterialTheme.colorScheme.onSecondary,
                         )
+                        // dish.rating
                         Text(
-                            text = "5"/* dish.rating*/,
+                            text = "5",
                             fontSize = 10.sp,
                             color = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .wrapContentSize(align = Alignment.Center)
+                            modifier =
+                                Modifier
+                                    .fillMaxSize()
+                                    .wrapContentSize(align = Alignment.Center),
                         )
                     }
                 }
             }
 
-
             Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .size(45.dp),
+                modifier =
+                    Modifier
+                        .align(Alignment.TopStart)
+                        .size(45.dp),
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.free_icon_clock_7164560/*Эта обложка была разработана с использованием ресурсов сайта Flaticon.com.*/),
+                    painter =
+                        painterResource(
+                            id = R.drawable.free_icon_clock_7164560,
+                            // Эта обложка была разработана с использованием ресурсов сайта Flaticon.com.
+                        ),
                     contentDescription = null,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .align(Alignment.Center)
-                        .background(MaterialTheme.colorScheme.secondary),
-                    tint = MaterialTheme.colorScheme.onSecondary
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .align(Alignment.Center)
+                            .background(MaterialTheme.colorScheme.secondary),
+                    tint = MaterialTheme.colorScheme.onSecondary,
                 )
+
                 Text(
-                    text = "30"/* dish.time*/,
+                    // dish.time
+                    text = "30",
                     fontSize = 10.sp,
                     color = MaterialTheme.colorScheme.onSecondary,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .wrapContentSize(align = Alignment.Center)
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .wrapContentSize(align = Alignment.Center),
                 )
             }
         }
     }
+}
+
+@Preview(
+    name = "Light theme",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
+)
+@Preview(
+    name = "Dark theme",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+fun DetailListView() {
+    TestTheme {
+        val navController = rememberNavControllerStub()
+        ListOfTypeDish(navController = navController, "Супы")
+    }
+}
+
+@Composable
+fun rememberNavControllerStub(): NavHostController {
+    // Получаем контекст текущего composable
+    val context = LocalContext.current
+    // Создаем NavHostController
+    val navController = remember { NavHostController(context) }
+
+    // Возвращаем созданный NavHostController
+    return navController
 }

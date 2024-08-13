@@ -1,7 +1,10 @@
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ktlint)
 
     id("kotlin-parcelize")
 }
@@ -23,13 +26,12 @@ android {
         }
     }
 
-
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -50,6 +52,19 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+}
+
+// gradle.build
+tasks.getByPath("preBuild").dependsOn("ktlintFormat")
+
+ktlint {
+    android = true
+    ignoreFailures = false
+    reporters {
+        reporter(reporterType = ReporterType.PLAIN)
+        reporter(reporterType = ReporterType.CHECKSTYLE)
+        reporter(reporterType = ReporterType.SARIF)
     }
 }
 
@@ -74,4 +89,7 @@ dependencies {
 
     implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+
+    // Coil library for loading online images to compose
+    implementation(libs.coil.compose)
 }

@@ -1,16 +1,42 @@
 package com.example.test.ui.dish
 
+import android.content.Intent
+import android.content.res.Configuration
+import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.test.ImageLoader
+import com.example.test.R
 import com.example.test.model.Dish
 import com.example.test.ui.theme.TestTheme
 import kotlinx.serialization.Serializable
@@ -19,29 +45,235 @@ import kotlinx.serialization.Serializable
 data class DishDetailScreen(val dish: Dish)
 
 @Composable
-fun DishDetail(dish: Dish) {
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+fun FullDishDetail(dish: Dish) {
+    Box(
+        modifier =
+            Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .fillMaxSize()
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp)
+                .statusBarsPadding()
+                .systemBarsPadding(),
     ) {
-        Text(text = dish.name)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = dish.type)
-
+        BasicDishInfo(dish = dish)
+        FavoriteButton(
+            Modifier
+                .align(Alignment.TopEnd)
+                .size(48.dp),
+        )
+        OpenLinkButton(
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .size(180.dp, 50.dp),
+            dish = dish,
+        )
     }
 }
 
+@Composable
+fun FavoriteButton(modifier: Modifier = Modifier) {
+    IconButton(
+        onClick = { /*TODO*/ },
+        modifier = modifier,
+    ) {
+        Icon(
+            Icons.Filled.Favorite,
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+            tint = MaterialTheme.colorScheme.primary,
+        )
+    }
+}
+
+@Composable
+fun OpenLinkButton(
+    modifier: Modifier = Modifier,
+    dish: Dish,
+) {
+    // Получаем контекст текущего экрана
+    val context = LocalContext.current
+
+    // Устанавливаем ссылку, которую нужно открыть
+    val url = dish.recipeLink
+
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+
+    // Проверяем, есть ли приложение, способное обработать этот интент
+    Button(
+        onClick = {
+            context.startActivity(intent)
+        },
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
+    ) {
+        Text(
+            "Рецепт",
+            fontSize = 17.sp,
+            color = MaterialTheme.colorScheme.onPrimary,
+        )
+    }
+}
+
+@Composable
+fun BasicDishInfo(dish: Dish) {
+    val image = R.drawable.ic_launcher_background
+    Column(
+        modifier =
+            Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .fillMaxSize(),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Spacer(modifier = Modifier.height(15.dp))
+        HeaderText(
+            text = dish.name,
+            size = 20,
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        SecondDishInfo()
+        Spacer(modifier = Modifier.height(8.dp))
+        Card(
+            modifier =
+                Modifier
+                    .size(200.dp, 200.dp)
+                    .background(MaterialTheme.colorScheme.background),
+            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background),
+        ) {
+            ImageLoader(
+                dish.imageUrl,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+    }
+}
+
+@Composable
+fun SecondDishInfo() {
+    Row(
+        modifier =
+            Modifier
+                .size(400.dp, 70.dp),
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Spacer(modifier = Modifier.height(4.dp))
+        CookedPrepTime()
+        Feedback()
+    }
+}
+
+@Composable
+fun Feedback() {
+    Card(
+        modifier =
+            Modifier
+                .size(185.dp, 70.dp)
+                .background(MaterialTheme.colorScheme.background)
+                .wrapContentWidth(align = Alignment.End),
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background),
+    ) {
+        HeaderText(
+            text = "Ваша оценка",
+            size = 17,
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        )
+        Button(
+            onClick = { /*TODO*/ },
+            modifier = Modifier.padding(2.dp),
+            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.onPrimary),
+            elevation = ButtonDefaults.elevatedButtonElevation(4.dp),
+        ) {
+            Text(
+                text = "Оценить",
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+    }
+}
+
+@Composable
+fun CookedPrepTime() {
+    Box(
+        modifier =
+            Modifier
+                .size(185.dp, 70.dp)
+                .wrapContentWidth(Alignment.Start),
+    ) {
+        HeaderText(
+            text = "Время приготовления",
+            size = 17,
+            modifier = Modifier.wrapContentWidth(align = Alignment.CenterHorizontally),
+        )
+        Row(
+            modifier =
+                Modifier
+                    .padding(top = 25.dp)
+                    .size(185.dp, 50.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            Icon(
+                painter =
+                    painterResource(
+                        id = R.drawable.free_icon_clock_7164560,
+                        // Эта обложка была разработана с использованием ресурсов сайта Flaticon.com.
+                    ),
+                contentDescription = null,
+                modifier =
+                    Modifier
+                        .size(24.dp)
+                        .background(MaterialTheme.colorScheme.background),
+                tint = MaterialTheme.colorScheme.primary,
+            )
+
+            Text(
+                // dish.time
+                text = "30 мин.",
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.primary,
+                modifier =
+                    Modifier
+                        .wrapContentSize(align = Alignment.CenterStart)
+                        .padding(start = 8.dp),
+            )
+        }
+    }
+}
+
+@Composable
+fun HeaderText(
+    text: String,
+    modifier: Modifier = Modifier,
+    size: Int,
+) {
+    Text(
+        text = text,
+        fontSize = size.sp,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = modifier,
+    )
+}
+
 @Preview(
+    name = "Light theme",
     showBackground = true,
-    showSystemUi = true
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
+)
+@Preview(
+    name = "Dark theme",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
 fun DetailView() {
-    val dish: Dish = Dish(0, "Sendwith with Egg", "Завтрак")
+    val dish: Dish = Dish(0, "Sendwith with Egg", "Завтрак", "", "")
     TestTheme {
-        DishDetail(dish = dish)
+        FullDishDetail(dish = dish)
     }
 }

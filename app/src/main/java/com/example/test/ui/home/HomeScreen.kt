@@ -1,6 +1,5 @@
 package com.example.test.ui.home
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,13 +32,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.test.R
+import com.example.test.ImageLoader
 import com.example.test.model.Dish
 import com.example.test.model.dishes
 import com.example.test.ui.dish.DishDetailScreen
@@ -51,12 +48,13 @@ object HomeScreen {
     @Composable
     fun MainScreen(navController: NavHostController) {
         Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.background)
-                .fillMaxSize()
-                .padding(start = 16.dp, end = 16.dp)
-                .statusBarsPadding(),
-            verticalArrangement = Arrangement.Center
+            modifier =
+                Modifier
+                    .background(MaterialTheme.colorScheme.background)
+                    .fillMaxSize()
+                    .padding(start = 16.dp, end = 16.dp)
+                    .statusBarsPadding(),
+            verticalArrangement = Arrangement.Center,
         ) {
             ListOfTypeDish(navController)
             Spacer(modifier = Modifier.height(32.dp))
@@ -66,57 +64,58 @@ object HomeScreen {
 
     @Composable
     fun ListOfTypeDish(navController: NavHostController) {
-        Column {
-            Text(
-                text = "Список блюд",
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentWidth(Alignment.CenterHorizontally)
-
-            )
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            HeaderText(text = "List of a dish")
             Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    FilterButton(navController, type = "Завтрак")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    FilterButton(navController, type = "Гарнир")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    FilterButton(navController, type = "Десерты")
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    FilterButton(navController, type = "Супы")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    FilterButton(navController, type = "Салаты")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    FilterButton(navController, type = "Мясо/Рыба")
-                }
-            }
-
+            DishTypes(navController = navController)
         }
     }
 
     @Composable
-    fun FilterButton(navController: NavHostController, type: String) {
+    fun DishTypes(navController: NavHostController) {
+        val types =
+            listOf(
+                listOf("Завтрак", "Супы"),
+                listOf("Гарнир", "Салаты"),
+                listOf("Мясо/Рыба", "Десерты"),
+                listOf("Напитки", "Закуски"),
+            )
+        for (row in types) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                for (type in row) {
+                    FilterButton(navController = navController, type = type)
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+
+    @Composable
+    fun FilterButton(
+        navController: NavHostController,
+        type: String,
+    ) {
         Button(
             onClick = {
-                navController.navigate(DishListScreen(Dish(0, "", type)))
+                navController.navigate(DishListScreen(Dish(0, "", type, "", "")))
             },
-            modifier = Modifier
-                .height(50.dp)
-                .width(155.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary
-            ),
-            elevation = ButtonDefaults.buttonElevation(8.dp)
-
+            modifier =
+                Modifier
+                    .height(50.dp)
+                    .width(155.dp),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                ),
+            elevation = ButtonDefaults.buttonElevation(8.dp),
         ) {
             Text(text = type, color = MaterialTheme.colorScheme.onPrimary)
         }
@@ -124,27 +123,21 @@ object HomeScreen {
 
     @Composable
     fun FavouriteDishGrid(navController: NavHostController) {
+        val dh = dishes.filter { it.isFavorite }
         Column {
-            Text(
-                text = "Любимые блюда",
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentWidth(Alignment.CenterHorizontally)
-            )
+            HeaderText(text = "Love dishes")
             Spacer(modifier = Modifier.height(16.dp))
             LazyHorizontalGrid(
                 rows = GridCells.Fixed(1),
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(220.dp),
             ) {
-                items(dishes) { dish ->
+                items(dh) { dish ->
 
                     DishCard(navController, dish)
                 }
@@ -154,61 +147,80 @@ object HomeScreen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun DishCard(navController: NavHostController, dish: Dish) {
-        val image: Painter = painterResource(R.drawable.ic_launcher_background)
+    fun DishCard(
+        navController: NavHostController,
+        dish: Dish,
+    ) {
         Card(
             onClick = {
                 navController.navigate(DishDetailScreen(dish = dish))
             },
-            modifier = Modifier
-                .size(180.dp, 180.dp)
-                .background(MaterialTheme.colorScheme.background),
+            modifier =
+                Modifier
+                    .size(180.dp, 180.dp)
+                    .background(MaterialTheme.colorScheme.background),
             colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary),
-            elevation = CardDefaults.cardElevation(8.dp)
+            elevation = CardDefaults.cardElevation(8.dp),
         ) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier =
+                    Modifier
+                        .fillMaxSize(),
 //                    .padding(8.dp)
             ) {
                 Column(
                     modifier = Modifier.align(Alignment.Center),
                     verticalArrangement = Arrangement.SpaceAround,
                 ) {
-                    Image(
-                        painter = image,
-                        contentDescription = dish.name,
-                        modifier = Modifier
-                            .size(125.dp)
-                            .padding(bottom = 8.dp)
+                    ImageLoader(
+                        imageUrl = dish.imageUrl,
+                        modifier =
+                            Modifier
+                                .size(125.dp)
+                                .padding(bottom = 8.dp),
                     )
 
                     Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentWidth(align = Alignment.CenterHorizontally),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .wrapContentWidth(align = Alignment.CenterHorizontally),
                         text = dish.name,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSecondary
+                        color = MaterialTheme.colorScheme.onSecondary,
                     )
                 }
 
                 IconButton(
                     onClick = { /*TODO*/ },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(4.dp)
-                        .size(48.dp)
+                    modifier =
+                        Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(4.dp)
+                            .size(48.dp),
                 ) {
                     Icon(
                         Icons.Filled.Favorite,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondary
+                        tint = MaterialTheme.colorScheme.onSecondary,
                     )
                 }
             }
         }
     }
-}
 
+    @Composable
+    fun HeaderText(text: String) {
+        Text(
+            text = text,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.tertiary,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .wrapContentWidth(Alignment.CenterHorizontally),
+        )
+    }
+}

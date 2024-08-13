@@ -21,10 +21,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
-
-//@Composable
-//fun MainScreen() {
+// @Composable
+// fun MainScreen() {
 //    Column(
 //        modifier = Modifier
 //            .background(MaterialTheme.colorScheme.background)
@@ -37,10 +35,10 @@ class MainActivity : ComponentActivity() {
 //        Spacer(modifier = Modifier.height(32.dp))
 //        FavouriteDishGrid()
 //    }
-//}
+// }
 //
-//@Composable
-//fun ListOfTypeDish() {
+// @Composable
+// fun ListOfTypeDish() {
 //    Column {
 //        Text(
 //            text = "Выберите вид блюда, которое хотите съесть",
@@ -73,10 +71,10 @@ class MainActivity : ComponentActivity() {
 //        }
 //
 //    }
-//}
+// }
 //
-//@Composable
-//fun FilterButton(type: String) {
+// @Composable
+// fun FilterButton(type: String) {
 //    Button(
 //        onClick = {},
 //        modifier = Modifier
@@ -89,10 +87,10 @@ class MainActivity : ComponentActivity() {
 //    ) {
 //        Text(text = type, color = MaterialTheme.colorScheme.onPrimary)
 //    }
-//}
+// }
 //
-//@Composable
-//fun FavouriteDishGrid() {
+// @Composable
+// fun FavouriteDishGrid() {
 //    val dishes = remember { listOf("Блюдо 1", "Блюдо 2", "Блюдо 3", "Блюдо 4") }
 //    Column {
 //        Text(
@@ -118,11 +116,11 @@ class MainActivity : ComponentActivity() {
 //        }
 //    }
 //
-//}
+// }
 //
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun DishCard(name: String) {
+// @OptIn(ExperimentalMaterial3Api::class)
+// @Composable
+// fun DishCard(name: String) {
 //    Card(
 //        onClick = { /*TODO*/ },
 //        modifier = Modifier
@@ -153,15 +151,13 @@ class MainActivity : ComponentActivity() {
 //            )
 //        }
 //    }
-//}
+// }
 //
-//@Preview(showSystemUi = true,
+// @Preview(showSystemUi = true,
 //    showBackground = true)
-//@Composable
-//fun MainPreview(){
+// @Composable
+// fun MainPreview(){
 //    TestTheme{
 //        MainScreen()
 //    }
-//}
-
-
+// }

@@ -12,8 +12,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.example.test.model.Dish
 import com.example.test.ui.dish.DishDetailScreen
-import com.example.test.ui.dish.DishDetail
 import com.example.test.ui.dish.DishListScreen
+import com.example.test.ui.dish.FullDishDetail
 import com.example.test.ui.dish.ListOfTypeDish
 import com.example.test.ui.home.HomeScreen
 import kotlinx.serialization.encodeToString
@@ -25,36 +25,38 @@ fun AppNavHost(navController: NavHostController) {
     NavHost(navController = navController, startDestination = HomeScreen) {
         composable<HomeScreen> {
             HomeScreen.MainScreen(navController = navController)
-
         }
         composable<DishListScreen>(
-            typeMap = mapOf(typeOf<Dish>() to NavType.mapper<Dish>())
+            typeMap = mapOf(typeOf<Dish>() to NavType.mapper<Dish>()),
         ) {
             val dish = it.toRoute<DishListScreen>().dish
             ListOfTypeDish(navController, type = dish.type)
-
         }
         composable<DishDetailScreen>(
-            typeMap = mapOf(typeOf<Dish>() to NavType.mapper<Dish>())
+            typeMap = mapOf(typeOf<Dish>() to NavType.mapper<Dish>()),
         ) {
             val dish = it.toRoute<DishDetailScreen>().dish
-            DishDetail(dish)
+            FullDishDetail(dish)
         }
     }
-
 }
 
 inline fun <reified T : Parcelable> NavType.Companion.mapper(): NavType<T> {
-
     return object : NavType<T>(
-        isNullableAllowed = false
+        isNullableAllowed = false,
     ) {
-        override fun put(bundle: Bundle, key: String, value: T) {
+        override fun put(
+            bundle: Bundle,
+            key: String,
+            value: T,
+        ) {
             bundle.putParcelable(key, value)
         }
 
-        override fun get(bundle: Bundle, key: String): T? {
-
+        override fun get(
+            bundle: Bundle,
+            key: String,
+        ): T? {
             return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                 @Suppress("DEPRECATION")
                 bundle.getParcelable(key)
