@@ -1,8 +1,10 @@
+
 package com.example.test.ui.dish
 
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -28,8 +31,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,43 +52,64 @@ import kotlinx.serialization.Serializable
 data class DishDetailScreen(val dish: Dish)
 
 @Composable
-fun FullDishDetail(dish: Dish) {
+fun FullDishDetail(
+    dish: Dish,
+    viewModel: DishViewModel,
+) {
+
+    val updatedDish = viewModel.dishesFlow.collectAsState().value.find { it.id == dish.id }
+    val isFavorite by rememberUpdatedState(updatedDish?.isFavorite ?: dish.isFavorite)
+
+    val iconTint by animateColorAsState(
+        targetValue = if (isFavorite) Color.Red else Color.Gray,
+    )
+
     Box(
         modifier =
-            Modifier
-                .background(MaterialTheme.colorScheme.background)
-                .fillMaxSize()
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp)
-                .statusBarsPadding()
-                .systemBarsPadding(),
+        Modifier
+            .background(MaterialTheme.colorScheme.background)
+            .fillMaxSize()
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp)
+            .statusBarsPadding()
+            .systemBarsPadding(),
     ) {
         BasicDishInfo(dish = dish)
+
         FavoriteButton(
-            Modifier
+            modifier = Modifier
                 .align(Alignment.TopEnd)
                 .size(48.dp),
+            onFavoriteClick = { viewModel.toggleFavorite(dish.id) },
+            updatedDish = updatedDish,
+            iconTint = iconTint
         )
+
         OpenLinkButton(
             modifier =
-                Modifier
-                    .align(Alignment.BottomCenter)
-                    .size(180.dp, 50.dp),
+            Modifier
+                .align(Alignment.BottomCenter)
+                .size(180.dp, 50.dp),
             dish = dish,
         )
     }
 }
 
 @Composable
-fun FavoriteButton(modifier: Modifier = Modifier) {
+fun FavoriteButton(
+    modifier: Modifier = Modifier,
+    onFavoriteClick:() -> Unit,
+    updatedDish: Dish?,
+    iconTint: Color
+    ) {
     IconButton(
-        onClick = { /*TODO*/ },
-        modifier = modifier,
+        onClick = onFavoriteClick,
+        modifier = modifier
     ) {
         Icon(
-            Icons.Filled.Favorite,
-            contentDescription = null,
+            imageVector = if (updatedDish!!.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+            contentDescription = "Favorite",
             modifier = Modifier.size(24.dp),
-            tint = MaterialTheme.colorScheme.primary,
+            tint = iconTint,
         )
     }
 }
@@ -91,15 +119,12 @@ fun OpenLinkButton(
     modifier: Modifier = Modifier,
     dish: Dish,
 ) {
-    // Получаем контекст текущего экрана
     val context = LocalContext.current
 
-    // Устанавливаем ссылку, которую нужно открыть
     val url = dish.recipeLink
 
     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
 
-    // Проверяем, есть ли приложение, способное обработать этот интент
     Button(
         onClick = {
             context.startActivity(intent)
@@ -117,12 +142,11 @@ fun OpenLinkButton(
 
 @Composable
 fun BasicDishInfo(dish: Dish) {
-    val image = R.drawable.ic_launcher_background
     Column(
         modifier =
-            Modifier
-                .background(MaterialTheme.colorScheme.background)
-                .fillMaxSize(),
+        Modifier
+            .background(MaterialTheme.colorScheme.background)
+            .fillMaxSize(),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -137,9 +161,9 @@ fun BasicDishInfo(dish: Dish) {
         Spacer(modifier = Modifier.height(8.dp))
         Card(
             modifier =
-                Modifier
-                    .size(200.dp, 200.dp)
-                    .background(MaterialTheme.colorScheme.background),
+            Modifier
+                .size(200.dp, 200.dp)
+                .background(MaterialTheme.colorScheme.background),
             colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background),
         ) {
             ImageLoader(
@@ -169,10 +193,10 @@ fun SecondDishInfo() {
 fun Feedback() {
     Card(
         modifier =
-            Modifier
-                .size(185.dp, 70.dp)
-                .background(MaterialTheme.colorScheme.background)
-                .wrapContentWidth(align = Alignment.End),
+        Modifier
+            .size(185.dp, 70.dp)
+            .background(MaterialTheme.colorScheme.background)
+            .wrapContentWidth(align = Alignment.End),
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background),
     ) {
         HeaderText(
@@ -199,9 +223,9 @@ fun Feedback() {
 fun CookedPrepTime() {
     Box(
         modifier =
-            Modifier
-                .size(185.dp, 70.dp)
-                .wrapContentWidth(Alignment.Start),
+        Modifier
+            .size(185.dp, 70.dp)
+            .wrapContentWidth(Alignment.Start),
     ) {
         HeaderText(
             text = "Время приготовления",
@@ -210,9 +234,9 @@ fun CookedPrepTime() {
         )
         Row(
             modifier =
-                Modifier
-                    .padding(top = 25.dp)
-                    .size(185.dp, 50.dp),
+            Modifier
+                .padding(top = 25.dp)
+                .size(185.dp, 50.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
         ) {
@@ -224,9 +248,9 @@ fun CookedPrepTime() {
                     ),
                 contentDescription = null,
                 modifier =
-                    Modifier
-                        .size(24.dp)
-                        .background(MaterialTheme.colorScheme.background),
+                Modifier
+                    .size(24.dp)
+                    .background(MaterialTheme.colorScheme.background),
                 tint = MaterialTheme.colorScheme.primary,
             )
 
@@ -272,8 +296,9 @@ fun HeaderText(
 )
 @Composable
 fun DetailView() {
-    val dish: Dish = Dish(0, "Sendwith with Egg", "Завтрак", "", "")
+    val viewModel = DishViewModel()
+    val dish = Dish(0, "Sendwith with Egg", "Завтрак", "", "")
     TestTheme {
-        FullDishDetail(dish = dish)
+        FullDishDetail(dish = dish, viewModel)
     }
 }

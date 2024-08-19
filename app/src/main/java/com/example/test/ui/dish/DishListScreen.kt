@@ -1,6 +1,7 @@
 package com.example.test.ui.dish
 
 import android.content.res.Configuration
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,9 +31,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +60,7 @@ data class DishListScreen(val dish: Dish)
 fun ListOfTypeDish(
     navController: NavHostController,
     type: String,
+    viewModel: DishViewModel,
 ) {
     val types = dishes.filter { type == it.type }
 
@@ -85,7 +92,7 @@ fun ListOfTypeDish(
                     .fillMaxSize(),
         ) {
             items(types) { dish ->
-                ListTypeCard(navController, dish = dish)
+                ListTypeCard(navController, dish = dish, viewModel)
             }
         }
     }
@@ -96,7 +103,14 @@ fun ListOfTypeDish(
 fun ListTypeCard(
     navController: NavHostController,
     dish: Dish,
+    viewModel: DishViewModel,
 ) {
+    val updatedDish = viewModel.dishesFlow.collectAsState().value.find { it.id == dish.id }
+    val isFavorite by rememberUpdatedState(updatedDish?.isFavorite ?: dish.isFavorite)
+
+    val iconTint by animateColorAsState(
+        targetValue = if (isFavorite) Color.Red else Color.Gray,
+    )
     Card(
         onClick = {
             navController.navigate(DishDetailScreen(dish = dish))
@@ -153,17 +167,17 @@ fun ListTypeCard(
                     verticalArrangement = Arrangement.SpaceAround,
                 ) {
                     IconButton(
-                        onClick = { /*TODO*/ },
+                        onClick = { viewModel.toggleFavorite(dish.id) },
                         modifier =
                             Modifier
                                 .wrapContentSize(Alignment.TopEnd)
                                 .size(48.dp),
                     ) {
                         Icon(
-                            Icons.Filled.Favorite,
-                            contentDescription = null,
+                            imageVector = if (updatedDish!!.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Favorite",
                             modifier = Modifier.size(24.dp),
-                            tint = MaterialTheme.colorScheme.onSecondary,
+                            tint = iconTint,
                         )
                     }
 
@@ -250,7 +264,8 @@ fun ListTypeCard(
 fun DetailListView() {
     TestTheme {
         val navController = rememberNavControllerStub()
-        ListOfTypeDish(navController = navController, "Супы")
+        val viewModel = DishViewModel()
+        ListOfTypeDish(navController = navController, "Супы", viewModel)
     }
 }
 

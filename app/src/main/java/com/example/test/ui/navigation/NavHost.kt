@@ -13,6 +13,7 @@ import androidx.navigation.toRoute
 import com.example.test.model.Dish
 import com.example.test.ui.dish.DishDetailScreen
 import com.example.test.ui.dish.DishListScreen
+import com.example.test.ui.dish.DishViewModel
 import com.example.test.ui.dish.FullDishDetail
 import com.example.test.ui.dish.ListOfTypeDish
 import com.example.test.ui.home.HomeScreen
@@ -21,22 +22,28 @@ import kotlinx.serialization.json.Json
 import kotlin.reflect.typeOf
 
 @Composable
-fun AppNavHost(navController: NavHostController) {
+fun AppNavHost(
+    navController: NavHostController,
+    viewModel: DishViewModel,
+) {
     NavHost(navController = navController, startDestination = HomeScreen) {
         composable<HomeScreen> {
-            HomeScreen.MainScreen(navController = navController)
+            HomeScreen.MainScreen(
+                navController = navController,
+                viewModel = viewModel,
+            )
         }
         composable<DishListScreen>(
             typeMap = mapOf(typeOf<Dish>() to NavType.mapper<Dish>()),
         ) {
             val dish = it.toRoute<DishListScreen>().dish
-            ListOfTypeDish(navController, type = dish.type)
+            ListOfTypeDish(navController, type = dish.type, viewModel)
         }
         composable<DishDetailScreen>(
             typeMap = mapOf(typeOf<Dish>() to NavType.mapper<Dish>()),
         ) {
             val dish = it.toRoute<DishDetailScreen>().dish
-            FullDishDetail(dish)
+            FullDishDetail(dish, viewModel)
         }
     }
 }

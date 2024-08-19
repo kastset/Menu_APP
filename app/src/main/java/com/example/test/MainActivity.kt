@@ -4,7 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
+import com.example.test.ui.dish.DishViewModel
 import com.example.test.ui.navigation.AppNavHost
 import com.example.test.ui.theme.TestTheme
 
@@ -15,7 +17,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             TestTheme {
                 val navController = rememberNavController()
-                AppNavHost(navController)
+                val viewModel: DishViewModel = ViewModelProvider(this)[DishViewModel::class.java]
+
+                AppNavHost(navController, viewModel)
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.example.test.ui.home
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -30,35 +32,53 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.test.ImageLoader
 import com.example.test.model.Dish
-import com.example.test.model.dishes
 import com.example.test.ui.dish.DishDetailScreen
 import com.example.test.ui.dish.DishListScreen
+import com.example.test.ui.dish.DishViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable
 object HomeScreen {
     @Composable
-    fun MainScreen(navController: NavHostController) {
+    fun MainScreen(
+        navController: NavHostController,
+        viewModel: DishViewModel,
+    ) {
         Column(
             modifier =
-                Modifier
-                    .background(MaterialTheme.colorScheme.background)
-                    .fillMaxSize()
-                    .padding(start = 16.dp, end = 16.dp)
-                    .statusBarsPadding(),
+            Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .fillMaxSize()
+                .padding(start = 16.dp, end = 16.dp)
+                .statusBarsPadding(),
             verticalArrangement = Arrangement.Center,
         ) {
             ListOfTypeDish(navController)
             Spacer(modifier = Modifier.height(32.dp))
-            FavouriteDishGrid(navController)
+
+            val favoriteDishes by viewModel.dishesFlow.collectAsState()
+            val listOfFavoriteDish = favoriteDishes.filter { it.isFavorite }
+
+            FavouriteDishGrid(
+                navController = navController,
+                viewModel = viewModel,
+                listOfFavoriteDish = listOfFavoriteDish,
+                onFavoriteClick = { dishId ->
+                    viewModel.toggleFavorite(dishId)
+                },
+            )
         }
     }
 
@@ -108,13 +128,13 @@ object HomeScreen {
                 navController.navigate(DishListScreen(Dish(0, "", type, "", "")))
             },
             modifier =
-                Modifier
-                    .height(50.dp)
-                    .width(155.dp),
+            Modifier
+                .height(50.dp)
+                .width(155.dp),
             colors =
-                ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                ),
+            ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+            ),
             elevation = ButtonDefaults.buttonElevation(8.dp),
         ) {
             Text(text = type, color = MaterialTheme.colorScheme.onPrimary)
@@ -122,8 +142,12 @@ object HomeScreen {
     }
 
     @Composable
-    fun FavouriteDishGrid(navController: NavHostController) {
-        val dh = dishes.filter { it.isFavorite }
+    fun FavouriteDishGrid(
+        navController: NavHostController,
+        viewModel: DishViewModel,
+        listOfFavoriteDish: List<Dish>,
+        onFavoriteClick: (Int) -> Unit,
+    ) {
         Column {
             HeaderText(text = "Love dishes")
             Spacer(modifier = Modifier.height(16.dp))
@@ -133,13 +157,28 @@ object HomeScreen {
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .height(220.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .height(220.dp),
             ) {
-                items(dh) { dish ->
+                items(listOfFavoriteDish) { dish ->
 
-                    DishCard(navController, dish)
+                    val updatedDish =
+                        viewModel.dishesFlow.collectAsState().value.find { it.id == dish.id }
+                    val isFavorite by rememberUpdatedState(
+                        updatedDish?.isFavorite ?: dish.isFavorite
+                    )
+                    val iconTint by animateColorAsState(
+                        targetValue = if (isFavorite) Color.Red else Color.Gray,
+                    )
+
+                    DishCard(
+                        navController = navController,
+                        dish = dish,
+                        iconTint = iconTint,
+                        onFavoriteClick = onFavoriteClick,
+                        updatedDish = updatedDish,
+                    )
                 }
             }
         }
@@ -150,22 +189,25 @@ object HomeScreen {
     fun DishCard(
         navController: NavHostController,
         dish: Dish,
+        onFavoriteClick: (Int) -> Unit,
+        iconTint: Color,
+        updatedDish: Dish?,
     ) {
         Card(
             onClick = {
                 navController.navigate(DishDetailScreen(dish = dish))
             },
             modifier =
-                Modifier
-                    .size(180.dp, 180.dp)
-                    .background(MaterialTheme.colorScheme.background),
+            Modifier
+                .size(180.dp, 180.dp)
+                .background(MaterialTheme.colorScheme.background),
             colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary),
             elevation = CardDefaults.cardElevation(8.dp),
         ) {
             Box(
                 modifier =
-                    Modifier
-                        .fillMaxSize(),
+                Modifier
+                    .fillMaxSize(),
 //                    .padding(8.dp)
             ) {
                 Column(
@@ -175,16 +217,16 @@ object HomeScreen {
                     ImageLoader(
                         imageUrl = dish.imageUrl,
                         modifier =
-                            Modifier
-                                .size(125.dp)
-                                .padding(bottom = 8.dp),
+                        Modifier
+                            .size(125.dp)
+                            .padding(bottom = 8.dp),
                     )
 
                     Text(
                         modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .wrapContentWidth(align = Alignment.CenterHorizontally),
+                        Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth(align = Alignment.CenterHorizontally),
                         text = dish.name,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
@@ -193,17 +235,17 @@ object HomeScreen {
                 }
 
                 IconButton(
-                    onClick = { /*TODO*/ },
+                    onClick = { onFavoriteClick(dish.id) },
                     modifier =
-                        Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(4.dp)
-                            .size(48.dp),
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(4.dp)
+                        .size(48.dp),
                 ) {
                     Icon(
-                        Icons.Filled.Favorite,
+                        imageVector = if (updatedDish!!.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondary,
+                        tint = iconTint,
                     )
                 }
             }
@@ -218,9 +260,9 @@ object HomeScreen {
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.tertiary,
             modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .wrapContentWidth(Alignment.CenterHorizontally),
+            Modifier
+                .fillMaxWidth()
+                .wrapContentWidth(Alignment.CenterHorizontally),
         )
     }
 }
