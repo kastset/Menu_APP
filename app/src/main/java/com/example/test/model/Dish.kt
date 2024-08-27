@@ -15,7 +15,7 @@ data class Dish(
     @Serializable(with = UrlEncodedStringSerializer::class)
     val recipeLink: String,
     var isFavorite: Boolean = false,
-    var dishRate: Float = 0f,
+    var rating: Int = 0,
 ) : Parcelable
 
 var idNumber: Int = 1

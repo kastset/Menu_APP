@@ -1,6 +1,5 @@
 package com.example.test.ui.dish
 
-import android.content.res.Configuration
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,38 +18,31 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.test.ImageLoader
 import com.example.test.R
 import com.example.test.model.Dish
 import com.example.test.model.dishes
-import com.example.test.ui.theme.TestTheme
+import com.example.test.ui.components.DishRatingIcon
+import com.example.test.ui.components.FavoriteButton
+import com.example.test.ui.components.ImageLoader
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -111,6 +103,7 @@ fun ListTypeCard(
     val iconTint by animateColorAsState(
         targetValue = if (isFavorite) Color.Red else Color.Gray,
     )
+
     Card(
         onClick = {
             navController.navigate(DishDetailScreen(dish = dish))
@@ -166,43 +159,53 @@ fun ListTypeCard(
                             .fillMaxSize(),
                     verticalArrangement = Arrangement.SpaceAround,
                 ) {
-                    IconButton(
-                        onClick = { viewModel.toggleFavorite(dish.id) },
+                    FavoriteButton(
                         modifier =
                             Modifier
                                 .wrapContentSize(Alignment.TopEnd)
                                 .size(48.dp),
-                    ) {
-                        Icon(
-                            imageVector = if (updatedDish!!.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = "Favorite",
-                            modifier = Modifier.size(24.dp),
-                            tint = iconTint,
-                        )
+                        onFavoriteClick = { viewModel.toggleFavorite(dish.id) },
+                        updatedDish = updatedDish,
+                        iconTint = iconTint,
+                    )
+
+                    DishRatingIcon(
+                        modifier =
+                            Modifier
+                                .wrapContentSize(Alignment.TopEnd)
+                                .size(48.dp),
+                        backgroundColorIcon = MaterialTheme.colorScheme.secondary,
+                        updatedDish = updatedDish,
+                    ) { rating ->
+                        viewModel.toggleRating(dish.id, rating)
                     }
 
-                    IconButton(
-                        onClick = { /*TODO*/ },
+                    Box(
                         modifier =
                             Modifier
-                                .wrapContentSize(Alignment.TopEnd)
-                                .size(48.dp),
+                                .wrapContentSize(Alignment.TopStart)
+                                .size(45.dp),
                     ) {
                         Icon(
-                            Icons.Filled.Star,
+                            painter =
+                                painterResource(
+                                    id = R.drawable.free_icon_clock_7164560,
+                                    // Эта обложка была разработана с использованием ресурсов сайта Flaticon.com.
+                                ),
                             contentDescription = null,
                             modifier =
                                 Modifier
                                     .size(24.dp)
-                                    .wrapContentSize(Alignment.Center)
+                                    .align(Alignment.Center)
                                     .background(MaterialTheme.colorScheme.secondary),
                             tint = MaterialTheme.colorScheme.onSecondary,
                         )
-                        // dish.rating
+
                         Text(
-                            text = "5",
+                            // dish.time
+                            text = "30",
                             fontSize = 10.sp,
-                            color = MaterialTheme.colorScheme.secondary,
+                            color = MaterialTheme.colorScheme.onSecondary,
                             modifier =
                                 Modifier
                                     .fillMaxSize()
@@ -211,71 +214,6 @@ fun ListTypeCard(
                     }
                 }
             }
-
-            Box(
-                modifier =
-                    Modifier
-                        .align(Alignment.TopStart)
-                        .size(45.dp),
-            ) {
-                Icon(
-                    painter =
-                        painterResource(
-                            id = R.drawable.free_icon_clock_7164560,
-                            // Эта обложка была разработана с использованием ресурсов сайта Flaticon.com.
-                        ),
-                    contentDescription = null,
-                    modifier =
-                        Modifier
-                            .size(24.dp)
-                            .align(Alignment.Center)
-                            .background(MaterialTheme.colorScheme.secondary),
-                    tint = MaterialTheme.colorScheme.onSecondary,
-                )
-
-                Text(
-                    // dish.time
-                    text = "30",
-                    fontSize = 10.sp,
-                    color = MaterialTheme.colorScheme.onSecondary,
-                    modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .wrapContentSize(align = Alignment.Center),
-                )
-            }
         }
     }
-}
-
-@Preview(
-    name = "Light theme",
-    showBackground = true,
-    showSystemUi = true,
-    uiMode = Configuration.UI_MODE_NIGHT_NO,
-)
-@Preview(
-    name = "Dark theme",
-    showBackground = true,
-    showSystemUi = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-)
-@Composable
-fun DetailListView() {
-    TestTheme {
-        val navController = rememberNavControllerStub()
-        val viewModel = DishViewModel()
-        ListOfTypeDish(navController = navController, "Супы", viewModel)
-    }
-}
-
-@Composable
-fun rememberNavControllerStub(): NavHostController {
-    // Получаем контекст текущего composable
-    val context = LocalContext.current
-    // Создаем NavHostController
-    val navController = remember { NavHostController(context) }
-
-    // Возвращаем созданный NavHostController
-    return navController
 }

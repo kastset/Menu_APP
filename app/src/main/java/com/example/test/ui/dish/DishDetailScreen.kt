@@ -1,4 +1,3 @@
-
 package com.example.test.ui.dish
 
 import android.content.Intent
@@ -19,21 +18,20 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,9 +40,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.test.ImageLoader
 import com.example.test.R
 import com.example.test.model.Dish
+import com.example.test.ui.components.DishRatingIcon
+import com.example.test.ui.components.FavoriteButton
+import com.example.test.ui.components.HeaderText
+import com.example.test.ui.components.ImageLoader
+import com.example.test.ui.components.RatingDialog
 import com.example.test.ui.theme.TestTheme
 import kotlinx.serialization.Serializable
 
@@ -56,7 +58,6 @@ fun FullDishDetail(
     dish: Dish,
     viewModel: DishViewModel,
 ) {
-
     val updatedDish = viewModel.dishesFlow.collectAsState().value.find { it.id == dish.id }
     val isFavorite by rememberUpdatedState(updatedDish?.isFavorite ?: dish.isFavorite)
 
@@ -66,50 +67,33 @@ fun FullDishDetail(
 
     Box(
         modifier =
-        Modifier
-            .background(MaterialTheme.colorScheme.background)
-            .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp)
-            .statusBarsPadding()
-            .systemBarsPadding(),
+            Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .fillMaxSize()
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp)
+                .statusBarsPadding()
+                .systemBarsPadding(),
     ) {
-        BasicDishInfo(dish = dish)
+        BasicDishInfo(dish = dish, updatedDish) { rating ->
+            viewModel.toggleRating(dish.id, rating)
+        }
 
         FavoriteButton(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .size(48.dp),
+            modifier =
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .size(48.dp),
             onFavoriteClick = { viewModel.toggleFavorite(dish.id) },
             updatedDish = updatedDish,
-            iconTint = iconTint
+            iconTint = iconTint,
         )
 
         OpenLinkButton(
             modifier =
-            Modifier
-                .align(Alignment.BottomCenter)
-                .size(180.dp, 50.dp),
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .size(180.dp, 50.dp),
             dish = dish,
-        )
-    }
-}
-
-@Composable
-fun FavoriteButton(
-    modifier: Modifier = Modifier,
-    onFavoriteClick:() -> Unit,
-    updatedDish: Dish?,
-    iconTint: Color
-    ) {
-    IconButton(
-        onClick = onFavoriteClick,
-        modifier = modifier
-    ) {
-        Icon(
-            imageVector = if (updatedDish!!.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-            contentDescription = "Favorite",
-            modifier = Modifier.size(24.dp),
-            tint = iconTint,
         )
     }
 }
@@ -141,12 +125,16 @@ fun OpenLinkButton(
 }
 
 @Composable
-fun BasicDishInfo(dish: Dish) {
+fun BasicDishInfo(
+    dish: Dish,
+    updateDish: Dish?,
+    onRatingChanged: (Int) -> Unit,
+) {
     Column(
         modifier =
-        Modifier
-            .background(MaterialTheme.colorScheme.background)
-            .fillMaxSize(),
+            Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .fillMaxSize(),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -157,13 +145,16 @@ fun BasicDishInfo(dish: Dish) {
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
         Spacer(modifier = Modifier.height(24.dp))
-        SecondDishInfo()
+        SecondDishInfo(
+            updateDish,
+            onRatingChanged,
+        )
         Spacer(modifier = Modifier.height(8.dp))
         Card(
             modifier =
-            Modifier
-                .size(200.dp, 200.dp)
-                .background(MaterialTheme.colorScheme.background),
+                Modifier
+                    .size(200.dp, 200.dp)
+                    .background(MaterialTheme.colorScheme.background),
             colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background),
         ) {
             ImageLoader(
@@ -175,7 +166,10 @@ fun BasicDishInfo(dish: Dish) {
 }
 
 @Composable
-fun SecondDishInfo() {
+fun SecondDishInfo(
+    updateDish: Dish?,
+    onRatingChanged: (Int) -> Unit,
+) {
     Row(
         modifier =
             Modifier
@@ -185,18 +179,24 @@ fun SecondDishInfo() {
     ) {
         Spacer(modifier = Modifier.height(4.dp))
         CookedPrepTime()
-        Feedback()
+        Feedback(updateDish, onRatingChanged)
     }
 }
 
 @Composable
-fun Feedback() {
+fun Feedback(
+    updatedDish: Dish?,
+    onRatingChanged: (Int) -> Unit,
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedRating by remember { mutableStateOf(updatedDish?.rating ?: 0) }
+
     Card(
         modifier =
-        Modifier
-            .size(185.dp, 70.dp)
-            .background(MaterialTheme.colorScheme.background)
-            .wrapContentWidth(align = Alignment.End),
+            Modifier
+                .size(185.dp, 70.dp)
+                .background(MaterialTheme.colorScheme.background)
+                .wrapContentWidth(align = Alignment.End),
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background),
     ) {
         HeaderText(
@@ -204,16 +204,39 @@ fun Feedback() {
             size = 17,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
-        Button(
-            onClick = { /*TODO*/ },
-            modifier = Modifier.padding(2.dp),
-            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.onPrimary),
-            elevation = ButtonDefaults.elevatedButtonElevation(4.dp),
-        ) {
-            Text(
-                text = "Оценить",
-                fontSize = 15.sp,
-                color = MaterialTheme.colorScheme.primary,
+        if (selectedRating == 0) {
+            Button(
+                onClick = { showDialog = true },
+                modifier = Modifier.padding(2.dp),
+                colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.onPrimary),
+                elevation = ButtonDefaults.elevatedButtonElevation(4.dp),
+            ) {
+                Text(
+                    text = "Оценить",
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            if (showDialog) {
+                RatingDialog(
+                    currentRating = selectedRating,
+                    onRatingSelected = { rating ->
+                        selectedRating = rating
+                        onRatingChanged(rating)
+                        showDialog = false
+                    },
+                    onDismiss = { showDialog = false },
+                )
+            }
+        } else {
+            DishRatingIcon(
+                modifier =
+                    Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .size(48.dp),
+                backgroundColorIcon = MaterialTheme.colorScheme.background,
+                updatedDish = updatedDish,
+                onRatingChanged = onRatingChanged,
             )
         }
     }
@@ -223,9 +246,9 @@ fun Feedback() {
 fun CookedPrepTime() {
     Box(
         modifier =
-        Modifier
-            .size(185.dp, 70.dp)
-            .wrapContentWidth(Alignment.Start),
+            Modifier
+                .size(185.dp, 70.dp)
+                .wrapContentWidth(Alignment.Start),
     ) {
         HeaderText(
             text = "Время приготовления",
@@ -234,9 +257,9 @@ fun CookedPrepTime() {
         )
         Row(
             modifier =
-            Modifier
-                .padding(top = 25.dp)
-                .size(185.dp, 50.dp),
+                Modifier
+                    .padding(top = 25.dp)
+                    .size(185.dp, 50.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
         ) {
@@ -248,9 +271,9 @@ fun CookedPrepTime() {
                     ),
                 contentDescription = null,
                 modifier =
-                Modifier
-                    .size(24.dp)
-                    .background(MaterialTheme.colorScheme.background),
+                    Modifier
+                        .size(24.dp)
+                        .background(MaterialTheme.colorScheme.background),
                 tint = MaterialTheme.colorScheme.primary,
             )
 
@@ -266,20 +289,6 @@ fun CookedPrepTime() {
             )
         }
     }
-}
-
-@Composable
-fun HeaderText(
-    text: String,
-    modifier: Modifier = Modifier,
-    size: Int,
-) {
-    Text(
-        text = text,
-        fontSize = size.sp,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = modifier,
-    )
 }
 
 @Preview(

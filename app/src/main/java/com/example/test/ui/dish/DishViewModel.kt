@@ -21,4 +21,18 @@ class DishViewModel : ViewModel() {
                 }
             }
     }
+
+    fun toggleRating(
+        dishId: Int,
+        newRating: Int,
+    ) {
+        dishesMutFlow.value =
+            dishesMutFlow.value.map { dish ->
+                if (dish.id == dishId) {
+                    dish.copy(rating = newRating)
+                } else {
+                    dish
+                }
+            }
+    }
 }

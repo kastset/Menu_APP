@@ -1,0 +1,33 @@
+package com.example.test.ui.components
+
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.example.test.model.Dish
+
+@Composable
+fun FavoriteButton(
+    modifier: Modifier = Modifier,
+    onFavoriteClick: () -> Unit,
+    updatedDish: Dish?,
+    iconTint: Color,
+) {
+    IconButton(
+        onClick = onFavoriteClick,
+        modifier = modifier,
+    ) {
+        Icon(
+            imageVector = if (updatedDish!!.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+            contentDescription = "Favorite",
+            modifier = Modifier.size(24.dp),
+            tint = iconTint,
+        )
+    }
+}
