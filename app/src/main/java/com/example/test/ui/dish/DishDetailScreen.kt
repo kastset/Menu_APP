@@ -18,11 +18,14 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,15 +51,12 @@ import com.example.test.ui.components.HeaderText
 import com.example.test.ui.components.ImageLoader
 import com.example.test.ui.components.RatingDialog
 import com.example.test.ui.theme.TestTheme
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class DishDetailScreen(val dish: Dish)
 
 @Composable
-fun FullDishDetail(
+fun DishDetailScreen(
     dish: Dish,
     viewModel: DishViewModel,
+    onPressBack: () -> Unit,
 ) {
     val updatedDish = viewModel.dishesFlow.collectAsState().value.find { it.id == dish.id }
     val isFavorite by rememberUpdatedState(updatedDish?.isFavorite ?: dish.isFavorite)
@@ -74,7 +74,11 @@ fun FullDishDetail(
                 .statusBarsPadding()
                 .systemBarsPadding(),
     ) {
-        BasicDishInfo(dish = dish, updatedDish) { rating ->
+        BasicDishInfo(
+            dish = dish,
+            updateDish = updatedDish,
+            onPressBack = onPressBack,
+        ) { rating ->
             viewModel.toggleRating(dish.id, rating)
         }
 
@@ -128,6 +132,7 @@ fun OpenLinkButton(
 fun BasicDishInfo(
     dish: Dish,
     updateDish: Dish?,
+    onPressBack: () -> Unit,
     onRatingChanged: (Int) -> Unit,
 ) {
     Column(
@@ -138,6 +143,21 @@ fun BasicDishInfo(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        IconButton(
+            onClick = { onPressBack() },
+            modifier =
+                Modifier
+                    .wrapContentSize(Alignment.TopStart)
+                    .size(48.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Go Back",
+                modifier = Modifier.size(24.dp),
+                tint = Color.Gray,
+            )
+        }
+
         Spacer(modifier = Modifier.height(15.dp))
         HeaderText(
             text = dish.name,
@@ -308,6 +328,6 @@ fun DetailView() {
     val viewModel = DishViewModel()
     val dish = Dish(0, "Sendwith with Egg", "Завтрак", "", "")
     TestTheme {
-        FullDishDetail(dish = dish, viewModel)
+        DishDetailScreen(dish = dish, viewModel, { })
     }
 }

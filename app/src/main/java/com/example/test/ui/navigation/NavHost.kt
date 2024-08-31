@@ -1,9 +1,5 @@
 package com.example.test.ui.navigation
 
-import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.Parcelable
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -14,11 +10,7 @@ import com.example.test.model.Dish
 import com.example.test.ui.dish.DishDetailScreen
 import com.example.test.ui.dish.DishListScreen
 import com.example.test.ui.dish.DishViewModel
-import com.example.test.ui.dish.FullDishDetail
-import com.example.test.ui.dish.ListOfTypeDish
-import com.example.test.ui.home.HomeScreen
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import com.example.test.ui.home.MainScreen
 import kotlin.reflect.typeOf
 
 @Composable
@@ -26,61 +18,42 @@ fun AppNavHost(
     navController: NavHostController,
     viewModel: DishViewModel,
 ) {
-    NavHost(navController = navController, startDestination = HomeScreen) {
-        composable<HomeScreen> {
-            HomeScreen.MainScreen(
-                navController = navController,
+    NavHost(navController = navController, startDestination = NavRoute.MainScreen) {
+        composable<NavRoute.MainScreen> {
+            MainScreen(
                 viewModel = viewModel,
+                onTypeClick = { type ->
+                    navController.navigate(
+                        NavRoute.DishListScreen(type),
+                    )
+                },
+                onDishClick = { dish ->
+                    navController.navigate(NavRoute.DishDetailScreen(dish))
+                },
             )
         }
-        composable<DishListScreen>(
+        composable<NavRoute.DishListScreen>(
             typeMap = mapOf(typeOf<Dish>() to NavType.mapper<Dish>()),
         ) {
-            val dish = it.toRoute<DishListScreen>().dish
-            ListOfTypeDish(navController, type = dish.type, viewModel)
+            val type = it.toRoute<NavRoute.DishListScreen>().type
+            DishListScreen(
+                type = type,
+                viewModel,
+                onDishClick = { dish ->
+                    navController.navigate(NavRoute.DishDetailScreen(dish))
+                },
+                onPressBack = { navController.navigateUp() },
+            )
         }
-        composable<DishDetailScreen>(
+        composable<NavRoute.DishDetailScreen>(
             typeMap = mapOf(typeOf<Dish>() to NavType.mapper<Dish>()),
         ) {
-            val dish = it.toRoute<DishDetailScreen>().dish
-            FullDishDetail(dish, viewModel)
-        }
-    }
-}
-
-inline fun <reified T : Parcelable> NavType.Companion.mapper(): NavType<T> {
-    return object : NavType<T>(
-        isNullableAllowed = false,
-    ) {
-        override fun put(
-            bundle: Bundle,
-            key: String,
-            value: T,
-        ) {
-            bundle.putParcelable(key, value)
-        }
-
-        override fun get(
-            bundle: Bundle,
-            key: String,
-        ): T? {
-            return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                @Suppress("DEPRECATION")
-                bundle.getParcelable(key)
-            } else {
-                bundle.getParcelable(key, T::class.java)
-            }
-        }
-
-        override fun serializeAsValue(value: T): String {
-            // Serialized values must always be Uri encoded
-            return Uri.encode(Json.encodeToString(value))
-        }
-
-        override fun parseValue(value: String): T {
-            // Navigation takes care of decoding the string
-            // before passing it to parseValue()
-            return Json.decodeFromString<T>(value)
+            val dish = it.toRoute<NavRoute.DishDetailScreen>().dish
+            DishDetailScreen(
+                dish = dish,
+                viewModel = viewModel,
+                onPressBack = { navController.navigateUp() },
+            )
         }
     }
 }

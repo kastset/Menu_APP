@@ -1,5 +1,6 @@
 package com.example.test.ui.dish
 
+import android.content.res.Configuration
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,10 +19,13 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,25 +38,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.example.test.R
 import com.example.test.model.Dish
 import com.example.test.model.dishes
 import com.example.test.ui.components.DishRatingIcon
 import com.example.test.ui.components.FavoriteButton
 import com.example.test.ui.components.ImageLoader
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class DishListScreen(val dish: Dish)
+import com.example.test.ui.theme.TestTheme
 
 @Composable
-fun ListOfTypeDish(
-    navController: NavHostController,
+fun DishListScreen(
     type: String,
     viewModel: DishViewModel,
+    onDishClick: (Dish) -> Unit,
+    onPressBack: () -> Unit,
 ) {
     val types = dishes.filter { type == it.type }
 
@@ -64,6 +66,21 @@ fun ListOfTypeDish(
                 .padding(start = 16.dp, end = 16.dp)
                 .statusBarsPadding(),
     ) {
+        IconButton(
+            onClick = { onPressBack() },
+            modifier =
+                Modifier
+                    .wrapContentSize(Alignment.TopStart)
+                    .size(48.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Go Back",
+                modifier = Modifier.size(24.dp),
+                tint = Color.Gray,
+            )
+        }
+
         Text(
             text = "Список блюд для типа: $type",
             fontSize = 20.sp,
@@ -84,7 +101,11 @@ fun ListOfTypeDish(
                     .fillMaxSize(),
         ) {
             items(types) { dish ->
-                ListTypeCard(navController, dish = dish, viewModel)
+                ListTypeCard(
+                    onDishClick = onDishClick,
+                    dish = dish,
+                    viewModel,
+                )
             }
         }
     }
@@ -93,7 +114,7 @@ fun ListOfTypeDish(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListTypeCard(
-    navController: NavHostController,
+    onDishClick: (Dish) -> Unit,
     dish: Dish,
     viewModel: DishViewModel,
 ) {
@@ -106,7 +127,7 @@ fun ListTypeCard(
 
     Card(
         onClick = {
-            navController.navigate(DishDetailScreen(dish = dish))
+            onDishClick(dish)
         },
         modifier =
             Modifier
@@ -146,6 +167,14 @@ fun ListTypeCard(
                     textAlign = TextAlign.Center,
                 )
             }
+
+            DishPrepIcon(
+                Modifier
+                    .wrapContentSize(Alignment.TopStart)
+                    .size(45.dp)
+                    .padding(top = 4.dp, end = 4.dp),
+            )
+
             Box(
                 modifier =
                     Modifier
@@ -179,41 +208,66 @@ fun ListTypeCard(
                     ) { rating ->
                         viewModel.toggleRating(dish.id, rating)
                     }
-
-                    Box(
-                        modifier =
-                            Modifier
-                                .wrapContentSize(Alignment.TopStart)
-                                .size(45.dp),
-                    ) {
-                        Icon(
-                            painter =
-                                painterResource(
-                                    id = R.drawable.free_icon_clock_7164560,
-                                    // Эта обложка была разработана с использованием ресурсов сайта Flaticon.com.
-                                ),
-                            contentDescription = null,
-                            modifier =
-                                Modifier
-                                    .size(24.dp)
-                                    .align(Alignment.Center)
-                                    .background(MaterialTheme.colorScheme.secondary),
-                            tint = MaterialTheme.colorScheme.onSecondary,
-                        )
-
-                        Text(
-                            // dish.time
-                            text = "30",
-                            fontSize = 10.sp,
-                            color = MaterialTheme.colorScheme.onSecondary,
-                            modifier =
-                                Modifier
-                                    .fillMaxSize()
-                                    .wrapContentSize(align = Alignment.Center),
-                        )
-                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun DishPrepIcon(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier,
+    ) {
+        Icon(
+            painter =
+                painterResource(
+                    id = R.drawable.free_icon_clock_7164560,
+                    // Эта обложка была разработана с использованием ресурсов сайта Flaticon.com.
+                ),
+            contentDescription = null,
+            modifier =
+                Modifier
+                    .size(24.dp)
+                    .align(Alignment.Center)
+                    .background(MaterialTheme.colorScheme.secondary),
+            tint = MaterialTheme.colorScheme.onSecondary,
+        )
+
+        Text(
+            // dish.time
+            text = "30",
+            fontSize = 10.sp,
+            color = MaterialTheme.colorScheme.onSecondary,
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .wrapContentSize(align = Alignment.Center),
+        )
+    }
+}
+
+@Preview(
+    name = "Light theme",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
+)
+@Preview(
+    name = "Dark theme",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+fun DetailListView() {
+    val viewModel = DishViewModel()
+    TestTheme {
+        DishListScreen(
+            onDishClick = {},
+            type = "Супы",
+            viewModel = viewModel,
+            onPressBack = {},
+        )
     }
 }
