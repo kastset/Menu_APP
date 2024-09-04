@@ -3,7 +3,6 @@ package com.example.test.ui.theme
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -43,13 +42,13 @@ private val lightScheme =
         inverseSurface = inverseSurfaceLight,
         inverseOnSurface = inverseOnSurfaceLight,
         inversePrimary = inversePrimaryLight,
-//    surfaceDim = surfaceDimLight,
-//    surfaceBright = surfaceBrightLight,
-//    surfaceContainerLowest = surfaceContainerLowestLight,
-//    surfaceContainerLow = surfaceContainerLowLight,
-//    surfaceContainer = surfaceContainerLight,
-//    surfaceContainerHigh = surfaceContainerHighLight,
-//    surfaceContainerHighest = surfaceContainerHighestLight,
+        surfaceDim = surfaceDimLight,
+        surfaceBright = surfaceBrightLight,
+        surfaceContainerLowest = surfaceContainerLowestLight,
+        surfaceContainerLow = surfaceContainerLowLight,
+        surfaceContainer = surfaceContainerLight,
+        surfaceContainerHigh = surfaceContainerHighLight,
+        surfaceContainerHighest = surfaceContainerHighestLight,
     )
 
 private val darkScheme =
@@ -82,13 +81,13 @@ private val darkScheme =
         inverseSurface = inverseSurfaceDark,
         inverseOnSurface = inverseOnSurfaceDark,
         inversePrimary = inversePrimaryDark,
-//    surfaceDim = surfaceDimDark,
-//    surfaceBright = surfaceBrightDark,
-//    surfaceContainerLowest = surfaceContainerLowestDark,
-//    surfaceContainerLow = surfaceContainerLowDark,
-//    surfaceContainer = surfaceContainerDark,
-//    surfaceContainerHigh = surfaceContainerHighDark,
-//    surfaceContainerHighest = surfaceContainerHighestDark,
+        surfaceDim = surfaceDimDark,
+        surfaceBright = surfaceBrightDark,
+        surfaceContainerLowest = surfaceContainerLowestDark,
+        surfaceContainerLow = surfaceContainerLowDark,
+        surfaceContainer = surfaceContainerDark,
+        surfaceContainerHigh = surfaceContainerHighDark,
+        surfaceContainerHighest = surfaceContainerHighestDark,
     )
 
 private val mediumContrastLightColorScheme =
@@ -121,13 +120,13 @@ private val mediumContrastLightColorScheme =
         inverseSurface = inverseSurfaceLightMediumContrast,
         inverseOnSurface = inverseOnSurfaceLightMediumContrast,
         inversePrimary = inversePrimaryLightMediumContrast,
-//    surfaceDim = surfaceDimLightMediumContrast,
-//    surfaceBright = surfaceBrightLightMediumContrast,
-//    surfaceContainerLowest = surfaceContainerLowestLightMediumContrast,
-//    surfaceContainerLow = surfaceContainerLowLightMediumContrast,
-//    surfaceContainer = surfaceContainerLightMediumContrast,
-//    surfaceContainerHigh = surfaceContainerHighLightMediumContrast,
-//    surfaceContainerHighest = surfaceContainerHighestLightMediumContrast,
+        surfaceDim = surfaceDimLightMediumContrast,
+        surfaceBright = surfaceBrightLightMediumContrast,
+        surfaceContainerLowest = surfaceContainerLowestLightMediumContrast,
+        surfaceContainerLow = surfaceContainerLowLightMediumContrast,
+        surfaceContainer = surfaceContainerLightMediumContrast,
+        surfaceContainerHigh = surfaceContainerHighLightMediumContrast,
+        surfaceContainerHighest = surfaceContainerHighestLightMediumContrast,
     )
 
 private val highContrastLightColorScheme =
@@ -160,13 +159,13 @@ private val highContrastLightColorScheme =
         inverseSurface = inverseSurfaceLightHighContrast,
         inverseOnSurface = inverseOnSurfaceLightHighContrast,
         inversePrimary = inversePrimaryLightHighContrast,
-//    surfaceDim = surfaceDimLightHighContrast,
-//    surfaceBright = surfaceBrightLightHighContrast,
-//    surfaceContainerLowest = surfaceContainerLowestLightHighContrast,
-//    surfaceContainerLow = surfaceContainerLowLightHighContrast,
-//    surfaceContainer = surfaceContainerLightHighContrast,
-//    surfaceContainerHigh = surfaceContainerHighLightHighContrast,
-//    surfaceContainerHighest = surfaceContainerHighestLightHighContrast,
+        surfaceDim = surfaceDimLightHighContrast,
+        surfaceBright = surfaceBrightLightHighContrast,
+        surfaceContainerLowest = surfaceContainerLowestLightHighContrast,
+        surfaceContainerLow = surfaceContainerLowLightHighContrast,
+        surfaceContainer = surfaceContainerLightHighContrast,
+        surfaceContainerHigh = surfaceContainerHighLightHighContrast,
+        surfaceContainerHighest = surfaceContainerHighestLightHighContrast,
     )
 
 private val mediumContrastDarkColorScheme =
@@ -199,13 +198,13 @@ private val mediumContrastDarkColorScheme =
         inverseSurface = inverseSurfaceDarkMediumContrast,
         inverseOnSurface = inverseOnSurfaceDarkMediumContrast,
         inversePrimary = inversePrimaryDarkMediumContrast,
-//    surfaceDim = surfaceDimDarkMediumContrast,
-//    surfaceBright = surfaceBrightDarkMediumContrast,
-//    surfaceContainerLowest = surfaceContainerLowestDarkMediumContrast,
-//    surfaceContainerLow = surfaceContainerLowDarkMediumContrast,
-//    surfaceContainer = surfaceContainerDarkMediumContrast,
-//    surfaceContainerHigh = surfaceContainerHighDarkMediumContrast,
-//    surfaceContainerHighest = surfaceContainerHighestDarkMediumContrast,
+        surfaceDim = surfaceDimDarkMediumContrast,
+        surfaceBright = surfaceBrightDarkMediumContrast,
+        surfaceContainerLowest = surfaceContainerLowestDarkMediumContrast,
+        surfaceContainerLow = surfaceContainerLowDarkMediumContrast,
+        surfaceContainer = surfaceContainerDarkMediumContrast,
+        surfaceContainerHigh = surfaceContainerHighDarkMediumContrast,
+        surfaceContainerHighest = surfaceContainerHighestDarkMediumContrast,
     )
 
 private val highContrastDarkColorScheme =
@@ -238,13 +237,13 @@ private val highContrastDarkColorScheme =
         inverseSurface = inverseSurfaceDarkHighContrast,
         inverseOnSurface = inverseOnSurfaceDarkHighContrast,
         inversePrimary = inversePrimaryDarkHighContrast,
-//    surfaceDim = surfaceDimDarkHighContrast,
-//    surfaceBright = surfaceBrightDarkHighContrast,
-//    surfaceContainerLowest = surfaceContainerLowestDarkHighContrast,
-//    surfaceContainerLow = surfaceContainerLowDarkHighContrast,
-//    surfaceContainer = surfaceContainerDarkHighContrast,
-//    surfaceContainerHigh = surfaceContainerHighDarkHighContrast,
-//    surfaceContainerHighest = surfaceContainerHighestDarkHighContrast,
+        surfaceDim = surfaceDimDarkHighContrast,
+        surfaceBright = surfaceBrightDarkHighContrast,
+        surfaceContainerLowest = surfaceContainerLowestDarkHighContrast,
+        surfaceContainerLow = surfaceContainerLowDarkHighContrast,
+        surfaceContainer = surfaceContainerDarkHighContrast,
+        surfaceContainerHigh = surfaceContainerHighDarkHighContrast,
+        surfaceContainerHighest = surfaceContainerHighestDarkHighContrast,
     )
 
 @Immutable

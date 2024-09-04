@@ -19,12 +19,13 @@ fun FavoriteButton(
     updatedDish: Dish?,
     iconTint: Color,
 ) {
+    var isFavorite = updatedDish?.isFavorite ?: false
     IconButton(
         onClick = onFavoriteClick,
         modifier = modifier,
     ) {
         Icon(
-            imageVector = if (updatedDish!!.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
             contentDescription = "Favorite",
             modifier = Modifier.size(24.dp),
             tint = iconTint,

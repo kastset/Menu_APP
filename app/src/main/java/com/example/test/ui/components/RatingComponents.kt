@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -44,7 +45,7 @@ fun DishRatingIcon(
             Icon(
                 imageVector = Icons.Default.Star,
                 contentDescription = "Rate Dish",
-                tint = Color.Gray,
+                tint = MaterialTheme.colorScheme.secondary,
             )
         } else {
             Icon(
@@ -60,7 +61,7 @@ fun DishRatingIcon(
             Text(
                 text = updatedDish!!.rating.toString(),
                 fontSize = 10.sp,
-                color = Color.Gray,
+                color = Color.Black,
                 modifier =
                     Modifier
                         .fillMaxSize()
@@ -90,6 +91,7 @@ fun RatingDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         title = { Text("Rate this dish") },
         text = {
             Row(

@@ -13,13 +13,13 @@ import kotlinx.serialization.json.Json
 @Serializable
 sealed class NavRoute {
     @Serializable
-    object MainScreen
+    data object MainScreen : NavRoute()
 
     @Serializable
-    data class DishListScreen(val type: String)
+    data class DishListScreen(val type: String) : NavRoute()
 
     @Serializable
-    data class DishDetailScreen(val dish: Dish)
+    data class DishDetailScreen(val dish: Dish) : NavRoute()
 }
 
 inline fun <reified T : Parcelable> NavType.Companion.mapper(): NavType<T> {
