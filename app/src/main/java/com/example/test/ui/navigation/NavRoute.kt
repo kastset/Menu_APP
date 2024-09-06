@@ -16,10 +16,16 @@ sealed class NavRoute {
     data object MainScreen : NavRoute()
 
     @Serializable
-    data class DishListScreen(val type: String) : NavRoute()
+    data class DishListScreen(val type: String? = null)
 
     @Serializable
-    data class DishDetailScreen(val dish: Dish) : NavRoute()
+    data class DishDetailScreen(val dish: Dish)
+
+    @Serializable
+    data object MenuScreen : NavRoute()
+
+    @Serializable
+    data object FavoriteDishListScreen : NavRoute()
 }
 
 inline fun <reified T : Parcelable> NavType.Companion.mapper(): NavType<T> {

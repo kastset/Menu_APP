@@ -1,5 +1,6 @@
 package com.example.test.ui.home
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
@@ -51,9 +52,11 @@ import com.example.test.ui.components.ImageLoader
 import com.example.test.ui.dish.DishViewModel
 import com.example.test.ui.theme.TestTheme
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
+    paddingValues: PaddingValues,
     viewModel: DishViewModel,
     onTypeClick: (String) -> Unit,
     onDishClick: (Dish) -> Unit,
@@ -83,54 +86,16 @@ fun MainScreen(
                     ),
             )
         },
-        bottomBar = {
-//            BottomAppBar(
-//                containerColor = MaterialTheme.colorScheme.surfaceContainer,
-//                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-//            ) {
-//                Spacer(modifier = Modifier.weight(0.5f))
-//                IconButton(
-//                    onClick = { /*TODO*/ },
-//                    modifier =
-//                    Modifier
-//                        .clip(CircleShape)
-//                        .background(MaterialTheme.colorScheme.secondaryContainer)
-//                        .size(48.dp),
-//                ) {
-//                    Icon(imageVector = Icons.Default.Home, contentDescription = "Home")
-//                }
-//                Spacer(modifier = Modifier.weight(1f))
-//                IconButton(
-//                    onClick = { /*TODO*/ },
-//                    modifier =
-//                        Modifier
-//                            .clip(CircleShape)
-//                            .background(MaterialTheme.colorScheme.secondaryContainer)
-//                            .size(48.dp),
-//                ) {
-//                    Icon(imageVector = Icons.Default.List, contentDescription = "List")
-//                }
-//                Spacer(modifier = Modifier.weight(1f))
-//                IconButton(
-//                    onClick = { /*TODO*/ },
-//                    modifier =
-//                        Modifier
-//                            .clip(CircleShape)
-//                            .background(MaterialTheme.colorScheme.secondaryContainer)
-//                            .size(48.dp),
-//                ) {
-//                    Icon(imageVector = Icons.Default.Favorite, contentDescription = "Favorite")
-//                }
-//                Spacer(modifier = Modifier.weight(0.5f))
-//            }
-        },
     ) {
         Column(
             modifier =
                 Modifier
                     .background(MaterialTheme.colorScheme.surface)
-                    .fillMaxSize()
-                    .padding(it),
+                    .padding(
+                        top = it.calculateTopPadding(),
+                        bottom = paddingValues.calculateBottomPadding(),
+                    )
+                    .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
         ) {
             ListOfTypeDish(onTypeClick = onTypeClick)
@@ -352,6 +317,7 @@ fun DishCard(
 fun MainScreenPreview() {
     val viewModel = DishViewModel()
     TestTheme {
-        MainScreen(viewModel = viewModel, {}, { })
+        val paddingValues = PaddingValues(16.dp)
+        MainScreen(paddingValues = paddingValues, viewModel = viewModel, {}, { })
     }
 }

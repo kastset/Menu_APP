@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,7 +50,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.test.R
 import com.example.test.model.Dish
-import com.example.test.ui.components.BottomAppBar
 import com.example.test.ui.components.DishRatingIcon
 import com.example.test.ui.components.FavoriteButton
 import com.example.test.ui.components.HeaderText
@@ -60,6 +60,7 @@ import com.example.test.ui.theme.TestTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DishDetailScreen(
+    paddingValues: PaddingValues,
     dish: Dish,
     viewModel: DishViewModel,
     onPressBack: () -> Unit,
@@ -111,55 +112,16 @@ fun DishDetailScreen(
                     ),
             )
         },
-        bottomBar = {
-            BottomAppBar()
-//            BottomAppBar(
-//                containerColor = MaterialTheme.colorScheme.surfaceContainer,
-//                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-//            ) {
-//                Spacer(modifier = Modifier.weight(0.5f))
-//                IconButton(
-//                    onClick = { /*TODO*/ },
-//                    modifier =
-//                        Modifier
-//                            .clip(CircleShape)
-//                            .background(MaterialTheme.colorScheme.secondaryContainer)
-//                            .size(48.dp),
-//                ) {
-//                    Icon(imageVector = Icons.Default.Home, contentDescription = "Home")
-//                }
-//                Spacer(modifier = Modifier.weight(1f))
-//                IconButton(
-//                    onClick = { /*TODO*/ },
-//                    modifier =
-//                        Modifier
-//                            .clip(CircleShape)
-//                            .background(MaterialTheme.colorScheme.secondaryContainer)
-//                            .size(48.dp),
-//                ) {
-//                    Icon(imageVector = Icons.Default.List, contentDescription = "List")
-//                }
-//                Spacer(modifier = Modifier.weight(1f))
-//                IconButton(
-//                    onClick = { /*TODO*/ },
-//                    modifier =
-//                        Modifier
-//                            .clip(CircleShape)
-//                            .background(MaterialTheme.colorScheme.secondaryContainer)
-//                            .size(48.dp),
-//                ) {
-//                    Icon(imageVector = Icons.Default.Favorite, contentDescription = "Favorite")
-//                }
-//                Spacer(modifier = Modifier.weight(0.5f))
-//            }
-        },
     ) {
         Box(
             modifier =
                 Modifier
                     .background(MaterialTheme.colorScheme.background)
                     .fillMaxSize()
-                    .padding(it),
+                    .padding(
+                        top = it.calculateTopPadding(),
+                        bottom = paddingValues.calculateBottomPadding(),
+                    ),
         ) {
             BasicDishInfo(
                 dish = dish,
@@ -393,7 +355,9 @@ fun DetailView() {
     val viewModel = DishViewModel()
     val dish = Dish(0, "Sendwith with Egg", "Завтрак", "", "", false)
     TestTheme {
+        val paddingValues = PaddingValues(16.dp)
         DishDetailScreen(
+            paddingValues = paddingValues,
             dish = dish,
             viewModel = viewModel,
             onPressBack = {},

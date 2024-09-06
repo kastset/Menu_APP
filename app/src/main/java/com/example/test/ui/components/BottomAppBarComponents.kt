@@ -1,5 +1,8 @@
 package com.example.test.ui.components
 
+import android.content.res.Configuration
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
@@ -8,69 +11,145 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.List
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.test.ui.navigation.NavRoute
+import com.example.test.ui.theme.TestTheme
+import kotlinx.coroutines.launch
 
-data class BottomNavigationItem(
+enum class BottomNavigationItem(
     val title: String,
     val route: NavRoute,
     val selectedItem: ImageVector,
     val unselectedItem: ImageVector,
-)
-
-val listOfBottomItem =
-    listOf(
-        BottomNavigationItem(
-            title = "Home",
-            route = NavRoute.MainScreen,
-            selectedItem = Icons.Filled.Home,
-            unselectedItem = Icons.Outlined.Home,
-        ),
-        BottomNavigationItem(
-            title = "Menu",
-            route = NavRoute.DishListScreen("Десерты"),
-            selectedItem = Icons.Filled.List,
-            unselectedItem = Icons.Outlined.List,
-        ),
-        BottomNavigationItem(
-            title = "Favorite",
-            route = NavRoute.DishListScreen("Супы"),
-            selectedItem = Icons.Filled.Favorite,
-            unselectedItem = Icons.Outlined.FavoriteBorder,
-        ),
-    )
+) {
+    HOME(
+        title = "Home",
+        route = NavRoute.MainScreen,
+        selectedItem = Icons.Filled.Home,
+        unselectedItem = Icons.Outlined.Home,
+    ),
+    MENU(
+        title = "Menu",
+        route = NavRoute.MenuScreen,
+        selectedItem = Icons.Filled.List,
+        unselectedItem = Icons.Outlined.List,
+    ),
+    FAVORITE(
+        title = "Favorite",
+        route = NavRoute.FavoriteDishListScreen,
+        selectedItem = Icons.Filled.Favorite,
+        unselectedItem = Icons.Outlined.FavoriteBorder,
+    ),
+}
 
 @Composable
-fun BottomAppBar() {
-    var selectedItemIndex by rememberSaveable {
-        mutableStateOf(0)
+fun BottomAppBar(
+    navController: NavHostController,
+    gridState: LazyGridState,
+) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute =
+        navBackStackEntry?.destination?.route
+            ?: BottomNavigationItem.MENU.route::class.qualifiedName.orEmpty()
+
+    val currentRouteTrimmed by remember(currentRoute) {
+        derivedStateOf { currentRoute.substringBefore("?") }
     }
 
-    NavigationBar {
-        listOfBottomItem.forEachIndexed { index, item ->
-            NavigationBarItem(
-                selected = selectedItemIndex == index,
-                onClick = {
-                    selectedItemIndex = index
-                },
-                label = {
-                    Text(text = item.title)
-                },
-                icon = {
-                    Icon(
-                        imageVector = if (index == selectedItemIndex) item.selectedItem else item.unselectedItem,
-                        contentDescription = item.title,
-                    )
-                },
-            )
-        }
+    val coroutineScope = rememberCoroutineScope()
+
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+    ) {
+        BottomNavigationItem.entries
+            .forEachIndexed { index, item ->
+                val isSelected by remember(currentRoute) {
+                    derivedStateOf { currentRouteTrimmed == item.route::class.qualifiedName }
+                }
+
+                NavigationBarItem(
+                    selected = isSelected,
+                    onClick = {
+                        if (!isSelected) {
+                            navController.navigate(item.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        } else {
+                            coroutineScope.launch {
+                                gridState.animateScrollToItem(0)
+                            }
+                        }
+                    },
+                    label = {
+                        Text(
+                            text = item.title,
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = if (isSelected) item.selectedItem else item.unselectedItem,
+                            contentDescription = item.title,
+                        )
+                    },
+                    colors =
+                        NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
+                )
+            }
     }
+}
+
+@Preview(
+    name = "Light theme",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
+)
+@Preview(
+    name = "Dark theme",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+fun PreviewBar() {
+    TestTheme {
+        val gridState = rememberLazyGridState()
+        BottomAppBar(
+            gridState = gridState,
+            navController = rememberNavControllerStub(),
+        )
+    }
+}
+
+@Composable
+fun rememberNavControllerStub(): NavHostController {
+    // Получаем контекст текущего composable
+    val context = LocalContext.current
+    // Создаем NavHostController
+    val navController = remember { NavHostController(context) }
+
+    // Возвращаем созданный NavHostController
+    return navController
 }

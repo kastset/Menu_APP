@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,15 +57,23 @@ import com.example.test.ui.theme.TestTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DishListScreen(
+    paddingValues: PaddingValues,
     type: String,
     viewModel: DishViewModel,
     onDishClick: (Dish) -> Unit,
     onPressBack: () -> Unit,
 ) {
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
     val types = dishes.filter { type == it.type }
+
     Scaffold(
+        modifier =
+            Modifier
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
+                scrollBehavior = scrollBehavior,
                 title = {
                     Text(
                         text = "Список блюд для типа: $type",
@@ -91,7 +100,6 @@ fun DishListScreen(
                         onClick = { onPressBack() },
                         modifier =
                             Modifier
-                                .wrapContentSize(Alignment.TopStart)
                                 .size(48.dp),
                     ) {
                         Icon(
@@ -103,54 +111,16 @@ fun DishListScreen(
                 },
             )
         },
-        bottomBar = {
-//            BottomAppBar(
-//                containerColor = MaterialTheme.colorScheme.surfaceContainer,
-//                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-//            ) {
-//                Spacer(modifier = Modifier.weight(0.5f))
-//                IconButton(
-//                    onClick = { /*TODO*/ },
-//                    modifier =
-//                        Modifier
-//                            .clip(CircleShape)
-//                            .background(MaterialTheme.colorScheme.secondaryContainer)
-//                            .size(48.dp),
-//                ) {
-//                    Icon(imageVector = Icons.Default.Home, contentDescription = "Home")
-//                }
-//                Spacer(modifier = Modifier.weight(1f))
-//                IconButton(
-//                    onClick = { /*TODO*/ },
-//                    modifier =
-//                        Modifier
-//                            .clip(CircleShape)
-//                            .background(MaterialTheme.colorScheme.secondaryContainer)
-//                            .size(48.dp),
-//                ) {
-//                    Icon(imageVector = Icons.Default.List, contentDescription = "List")
-//                }
-//                Spacer(modifier = Modifier.weight(1f))
-//                IconButton(
-//                    onClick = { /*TODO*/ },
-//                    modifier =
-//                        Modifier
-//                            .clip(CircleShape)
-//                            .background(MaterialTheme.colorScheme.secondaryContainer)
-//                            .size(48.dp),
-//                ) {
-//                    Icon(imageVector = Icons.Default.Favorite, contentDescription = "Favorite")
-//                }
-//                Spacer(modifier = Modifier.weight(0.5f))
-//            }
-        },
     ) {
         Column(
             modifier =
                 Modifier
                     .background(MaterialTheme.colorScheme.surface)
                     .fillMaxSize()
-                    .padding(it),
+                    .padding(
+                        top = it.calculateTopPadding(),
+                        bottom = paddingValues.calculateBottomPadding(),
+                    ),
         ) {
             Spacer(modifier = Modifier.height(8.dp))
             LazyVerticalGrid(
@@ -334,7 +304,9 @@ fun DishPrepIcon(modifier: Modifier = Modifier) {
 fun DetailListView() {
     val viewModel = DishViewModel()
     TestTheme {
+        val paddingValues = PaddingValues(16.dp)
         DishListScreen(
+            paddingValues = paddingValues,
             type = "Супы",
             viewModel = viewModel,
             onDishClick = {},
