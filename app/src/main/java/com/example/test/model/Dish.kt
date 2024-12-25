@@ -16,7 +16,13 @@ data class Dish(
     val recipeLink: String,
     var isFavorite: Boolean = false,
     var rating: Int = 0,
-) : Parcelable
+) : Parcelable {
+    fun doesSearchMatchQuery(query: String): Boolean {
+        val matchingCombination = "$name"
+
+        return matchingCombination.contains(query, ignoreCase = true)
+    }
+}
 
 var idNumber: Int = 1
 var dishPost: Int = 3

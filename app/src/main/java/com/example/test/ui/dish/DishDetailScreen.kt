@@ -1,9 +1,19 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalSharedTransitionApi::class)
+
 package com.example.test.ui.dish
 
 import android.content.Intent
-import android.content.res.Configuration
 import android.net.Uri
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.BoundsTransform
+import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,8 +28,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -45,7 +56,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.test.R
@@ -55,11 +65,31 @@ import com.example.test.ui.components.FavoriteButton
 import com.example.test.ui.components.HeaderText
 import com.example.test.ui.components.ImageLoader
 import com.example.test.ui.components.RatingDialog
-import com.example.test.ui.theme.TestTheme
+import com.example.test.utils.DishSharedElementKey
+import com.example.test.utils.DishSharedElementType
+
+fun <T> spatialExpressiveSpring() =
+    spring<T>(
+        dampingRatio = 0.8f,
+        stiffness = 380f,
+    )
+
+fun <T> nonSpatialExpressiveSpring() =
+    spring<T>(
+        dampingRatio = 1f,
+        stiffness = 1600f,
+    )
+
+val dishDetailBoundsTransform =
+    BoundsTransform { _, _ ->
+        spatialExpressiveSpring()
+    }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DishDetailScreen(
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
     paddingValues: PaddingValues,
     dish: Dish,
     viewModel: DishViewModel,
@@ -87,7 +117,7 @@ fun DishDetailScreen(
                                 .size(48.dp),
                     ) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Go Back",
                             modifier = Modifier.size(24.dp),
                         )
@@ -113,21 +143,50 @@ fun DishDetailScreen(
             )
         },
     ) {
-        Box(
-            modifier =
-                Modifier
-                    .background(MaterialTheme.colorScheme.background)
-                    .fillMaxSize()
-                    .padding(
-                        top = it.calculateTopPadding(),
-                        bottom = paddingValues.calculateBottomPadding(),
-                    ),
-        ) {
-            BasicDishInfo(
-                dish = dish,
-                updateDish = updatedDish,
-            ) { rating ->
-                viewModel.toggleRating(dish.id, rating)
+        val roundedCornerAnim by animatedContentScope.transition
+            .animateDp(label = "rounded corner") { enterExit: EnterExitState ->
+                when (enterExit) {
+                    EnterExitState.PreEnter -> 20.dp
+                    EnterExitState.Visible -> 0.dp
+                    EnterExitState.PostExit -> 20.dp
+                }
+            }
+
+        with(sharedTransitionScope) {
+            Box(
+                modifier =
+                    Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .fillMaxSize()
+                        .sharedBounds(
+                            rememberSharedContentState(
+                                key =
+                                    DishSharedElementKey(
+                                        dishId = dish.id,
+                                        origin = dish.name.toString(),
+                                        type = DishSharedElementType.Bounds,
+                                    ),
+                            ),
+                            animatedContentScope,
+                            clipInOverlayDuringTransition =
+                                OverlayClip(RoundedCornerShape(roundedCornerAnim)),
+                            boundsTransform = dishDetailBoundsTransform,
+                            exit = fadeOut(nonSpatialExpressiveSpring()),
+                            enter = fadeIn(nonSpatialExpressiveSpring()),
+                        )
+                        .padding(
+                            top = it.calculateTopPadding(),
+                            bottom = paddingValues.calculateBottomPadding(),
+                        ),
+            ) {
+                BasicDishInfo(
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedContentScope = animatedContentScope,
+                    dish = dish,
+                    updateDish = updatedDish,
+                ) { rating ->
+                    viewModel.toggleRating(dish.id, rating)
+                }
             }
         }
     }
@@ -135,51 +194,97 @@ fun DishDetailScreen(
 
 @Composable
 fun BasicDishInfo(
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
     dish: Dish,
     updateDish: Dish?,
     onRatingChanged: (Int) -> Unit,
 ) {
-    Column(
-        modifier =
-            Modifier
-                .background(MaterialTheme.colorScheme.surface)
-                .fillMaxSize(),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        HeaderText(
-            text = dish.name,
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            textColor = MaterialTheme.colorScheme.primary,
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        SecondDishInfo(
-            updateDish,
-            onRatingChanged,
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Card(
+    with(sharedTransitionScope) {
+        val roundedCornerAnimation by animatedContentScope.transition
+            .animateDp(label = "rounded corner") { enterExit: EnterExitState ->
+                when (enterExit) {
+                    EnterExitState.PreEnter -> 0.dp
+                    EnterExitState.Visible -> 20.dp
+                    EnterExitState.PostExit -> 20.dp
+                }
+            }
+
+        Column(
             modifier =
                 Modifier
-                    .size(200.dp, 200.dp)
-                    .background(MaterialTheme.colorScheme.background),
-            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background),
+                    .background(MaterialTheme.colorScheme.surface)
+                    .fillMaxSize(),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            ImageLoader(
-                dish.imageUrl,
-                modifier = Modifier.fillMaxSize(),
+            HeaderText(
+                text = dish.name,
+                style = MaterialTheme.typography.titleLarge,
+                modifier =
+                    Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .sharedBounds(
+                            rememberSharedContentState(
+                                key =
+                                    DishSharedElementKey(
+                                        dishId = dish.id,
+                                        origin = dish.name.toString(),
+                                        type = DishSharedElementType.Title,
+                                    ),
+                            ),
+                            animatedVisibilityScope = animatedContentScope,
+                            enter = fadeIn(nonSpatialExpressiveSpring()),
+                            exit = fadeOut(nonSpatialExpressiveSpring()),
+                            resizeMode = SharedTransitionScope.ResizeMode.ScaleToBounds(),
+                            boundsTransform = dishDetailBoundsTransform,
+                        ),
+                textColor = MaterialTheme.colorScheme.primary,
             )
+
+            Spacer(modifier = Modifier.height(24.dp))
+            SecondDishInfo(
+                updateDish,
+                onRatingChanged,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Card(
+                modifier =
+                    Modifier
+                        .size(200.dp, 200.dp)
+                        .background(MaterialTheme.colorScheme.background),
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background),
+            ) {
+                ImageLoader(
+                    dish.imageUrl,
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .sharedBounds(
+                                rememberSharedContentState(
+                                    key =
+                                        DishSharedElementKey(
+                                            dishId = dish.id,
+                                            origin = dish.name.toString(),
+                                            type = DishSharedElementType.Image,
+                                        ),
+                                ),
+                                animatedVisibilityScope = animatedContentScope,
+                                boundsTransform = dishDetailBoundsTransform,
+                            )
+                            .clip(shape = RoundedCornerShape(10.dp)),
+                )
+            }
+            Spacer(modifier = Modifier.weight(2f))
+            OpenLinkButton(
+                modifier =
+                    Modifier
+                        .wrapContentSize(Alignment.BottomCenter)
+                        .size(180.dp, 50.dp),
+                dish = dish,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
         }
-        Spacer(modifier = Modifier.weight(2f))
-        OpenLinkButton(
-            modifier =
-                Modifier
-                    .wrapContentSize(Alignment.BottomCenter)
-                    .size(180.dp, 50.dp),
-            dish = dish,
-        )
-        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
@@ -338,29 +443,21 @@ fun CookedPrepTime() {
     }
 }
 
-@Preview(
-    name = "Light theme",
-    showBackground = true,
-    showSystemUi = true,
-    uiMode = Configuration.UI_MODE_NIGHT_NO,
-)
-@Preview(
-    name = "Dark theme",
-    showBackground = true,
-    showSystemUi = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-)
-@Composable
-fun DetailView() {
-    val viewModel = DishViewModel()
-    val dish = Dish(0, "Sendwith with Egg", "Завтрак", "", "", false)
-    TestTheme {
-        val paddingValues = PaddingValues(16.dp)
-        DishDetailScreen(
-            paddingValues = paddingValues,
-            dish = dish,
-            viewModel = viewModel,
-            onPressBack = {},
-        )
-    }
-}
+// @Preview("default")
+// @Preview("dark theme", uiMode = UI_MODE_NIGHT_YES)
+// @Preview("large font", fontScale = 2f)
+// @Composable
+// private fun DishDetailPreview() {
+//    val viewModel = DishViewModel()
+//    val dish = dishes.first()
+//
+//    PreviewWrapper {
+//        val paddingValues = PaddingValues(16.dp)
+//        DishDetailScreen(
+//            paddingValues = paddingValues,
+//            dish = dish,
+//            viewModel = viewModel,
+//            onPressBack = {},
+//        )
+//    }
+// }

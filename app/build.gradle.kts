@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ktlint)
+    alias(libs.plugins.compose.compiler)
 
     id("kotlin-parcelize")
 }
@@ -89,6 +90,7 @@ dependencies {
 
     implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.compose.animation)
 
     // Coil library for loading online images to compose
     implementation(libs.coil.compose)

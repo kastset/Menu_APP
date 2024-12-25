@@ -1,15 +1,15 @@
 package com.example.test.ui.components
 
 import android.content.res.Configuration
-import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.List
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -27,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.test.ui.dish.DishViewModel
 import com.example.test.ui.navigation.NavRoute
 import com.example.test.ui.theme.TestTheme
 import kotlinx.coroutines.launch
@@ -38,7 +39,7 @@ enum class BottomNavigationItem(
     val unselectedItem: ImageVector,
 ) {
     HOME(
-        title = "Home",
+        title = "Категории",
         route = NavRoute.MainScreen,
         selectedItem = Icons.Filled.Home,
         unselectedItem = Icons.Outlined.Home,
@@ -46,8 +47,8 @@ enum class BottomNavigationItem(
     MENU(
         title = "Menu",
         route = NavRoute.MenuScreen,
-        selectedItem = Icons.Filled.List,
-        unselectedItem = Icons.Outlined.List,
+        selectedItem = Icons.AutoMirrored.Filled.List,
+        unselectedItem = Icons.AutoMirrored.Outlined.List,
     ),
     FAVORITE(
         title = "Favorite",
@@ -60,7 +61,8 @@ enum class BottomNavigationItem(
 @Composable
 fun BottomAppBar(
     navController: NavHostController,
-    gridState: LazyGridState,
+    gridState: LazyListState,
+    viewModel: DishViewModel,
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute =
@@ -85,6 +87,7 @@ fun BottomAppBar(
                 NavigationBarItem(
                     selected = isSelected,
                     onClick = {
+                        viewModel.clearSearchText()
                         if (!isSelected) {
                             navController.navigate(item.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
@@ -135,10 +138,12 @@ fun BottomAppBar(
 @Composable
 fun PreviewBar() {
     TestTheme {
-        val gridState = rememberLazyGridState()
+        val gridState = rememberLazyListState()
+        val viewModel = DishViewModel()
         BottomAppBar(
             gridState = gridState,
             navController = rememberNavControllerStub(),
+            viewModel = viewModel,
         )
     }
 }

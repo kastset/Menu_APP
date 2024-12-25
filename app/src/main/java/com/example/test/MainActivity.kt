@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Scaffold
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
@@ -22,13 +22,14 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val viewModel: DishViewModel = ViewModelProvider(this)[DishViewModel::class.java]
 
-                val gridState = rememberLazyGridState()
+                val gridState = rememberLazyListState()
 
                 Scaffold(
                     bottomBar = {
                         BottomAppBar(
                             gridState = gridState,
                             navController = navController,
+                            viewModel = viewModel,
                         )
                     },
                 ) { paddingValues ->

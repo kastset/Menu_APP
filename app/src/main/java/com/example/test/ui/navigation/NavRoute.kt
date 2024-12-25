@@ -16,10 +16,10 @@ sealed class NavRoute {
     data object MainScreen : NavRoute()
 
     @Serializable
-    data class DishListScreen(val type: String? = null)
+    data class DishListScreen(val type: String? = null) : NavRoute()
 
     @Serializable
-    data class DishDetailScreen(val dish: Dish)
+    data class DishDetailScreen(val dish: Dish) : NavRoute()
 
     @Serializable
     data object MenuScreen : NavRoute()
