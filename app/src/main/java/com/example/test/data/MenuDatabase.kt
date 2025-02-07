@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.test.model.Dish
 import com.example.test.model.dishes
 import kotlinx.coroutines.CoroutineScope
@@ -23,24 +22,27 @@ abstract class MenuDatabase : RoomDatabase() {
             return Instance ?: synchronized(this) {
                 Room.databaseBuilder(context, MenuDatabase::class.java, "dish_database")
                     .fallbackToDestructiveMigration()
-                    .addCallback(DatabaseCallback(context))
                     .build()
-                    .also { Instance = it }
+                    .also { bd ->
+                        Instance = bd
+                        CoroutineScope(Dispatchers.IO).launch {
+                            prepopulateDatabase(bd.dishDao())
+                        }
+                    }
             }
         }
 
-        private class DatabaseCallback(private val context: Context) : RoomDatabase.Callback() {
-            override fun onCreate(bd: SupportSQLiteDatabase) {
-                super.onCreate(bd)
-                CoroutineScope(Dispatchers.IO).launch {
-                    prepopulateDatabase(context)
+        private suspend fun prepopulateDatabase(dao: DishDao) {
+            val existingDishes = dao.getAllDishesForUpdateDb()
+            val newDish =
+                dishes.filter { newDish ->
+                    existingDishes.none { it.id == newDish.id }
                 }
+
+            if (newDish.isNotEmpty()) {
+                dao.insertDishes(newDish)
             }
         }
 
-        private suspend fun prepopulateDatabase(context: Context) {
-            val dao = getDatabase(context).dishDao()
-            dao.insertDishes(dishes)
-        }
     }
 }

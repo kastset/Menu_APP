@@ -20,6 +20,9 @@ interface DishDao {
     suspend fun update(dish: Dish)
 
     @Query("SELECT * from dishes")
+    suspend fun getAllDishesForUpdateDb(): List<Dish>
+
+    @Query("SELECT * from dishes")
     fun getAllDishes(): Flow<List<Dish>>
 
     @Query("SELECT * from dishes WHERE isFavorite = 1")
