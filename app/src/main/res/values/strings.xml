@@ -1,3 +1,28 @@
 <resources>
     <string name="app_name">Test</string>
+    <string name="home">Категории</string>
+    <string name="menu">Меню</string>
+    <string name="favorites">Любимые</string>
+    <string name="all_dish">Все Блюда</string>
+    <string name="favorite">любимое</string>
+    <string name="search">Поиск</string>
+    <string name="go_back">Go Back</string>
+    <string name="rate_dish">Оценить блюдо</string>
+    <string name="rate_this_dish">Оцените это блюдо</string>
+    <string name="done">Окей</string>
+    <string name="enter_text">Введите текст...</string>
+    <string name="list_of_a_dish">Типы блюд</string>
+    <string name="breacfast">Завтрак</string>
+    <string name="soup">Супы</string>
+    <string name="garnish">Гарнир</string>
+    <string name="salad">Салаты</string>
+    <string name="meat_or_fish">Мясо/Рыба</string>
+    <string name="desserts">Десерты</string>
+    <string name="drinks">Напитки</string>
+    <string name="snacks">Закуски</string>
+    <string name="your_rating">Ваша оценка</string>
+    <string name="rate">Оценить</string>
+    <string name="delete_rating">Сбросить рейтинг</string>
+    <string name="recipe">Рецепт</string>
+    <string name="cooked_time">Время приготовления</string>
 </resources>

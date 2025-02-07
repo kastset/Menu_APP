@@ -21,13 +21,13 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.test.ui.dish.DishViewModel
 import com.example.test.ui.navigation.NavRoute
 import com.example.test.ui.theme.TestTheme
 import kotlinx.coroutines.launch
@@ -45,13 +45,13 @@ enum class BottomNavigationItem(
         unselectedItem = Icons.Outlined.Home,
     ),
     MENU(
-        title = "Menu",
+        title = "Меню",
         route = NavRoute.MenuScreen,
         selectedItem = Icons.AutoMirrored.Filled.List,
         unselectedItem = Icons.AutoMirrored.Outlined.List,
     ),
     FAVORITE(
-        title = "Favorite",
+        title = "Любимые",
         route = NavRoute.FavoriteDishListScreen,
         selectedItem = Icons.Filled.Favorite,
         unselectedItem = Icons.Outlined.FavoriteBorder,
@@ -62,7 +62,7 @@ enum class BottomNavigationItem(
 fun BottomAppBar(
     navController: NavHostController,
     gridState: LazyListState,
-    viewModel: DishViewModel,
+    modifier: Modifier = Modifier,
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute =
@@ -77,6 +77,7 @@ fun BottomAppBar(
 
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        modifier = modifier,
     ) {
         BottomNavigationItem.entries
             .forEachIndexed { index, item ->
@@ -87,14 +88,22 @@ fun BottomAppBar(
                 NavigationBarItem(
                     selected = isSelected,
                     onClick = {
-                        viewModel.clearSearchText()
                         if (!isSelected) {
-                            navController.navigate(item.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                            if (item.route == NavRoute.MainScreen) {
+                                navController.navigate(NavRoute.MainScreen) {
+                                    popUpTo(NavRoute.MainScreen) {
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
+                            } else {
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
                             }
                         } else {
                             coroutineScope.launch {
@@ -139,22 +148,17 @@ fun BottomAppBar(
 fun PreviewBar() {
     TestTheme {
         val gridState = rememberLazyListState()
-        val viewModel = DishViewModel()
         BottomAppBar(
             gridState = gridState,
             navController = rememberNavControllerStub(),
-            viewModel = viewModel,
         )
     }
 }
 
 @Composable
 fun rememberNavControllerStub(): NavHostController {
-    // Получаем контекст текущего composable
     val context = LocalContext.current
-    // Создаем NavHostController
     val navController = remember { NavHostController(context) }
 
-    // Возвращаем созданный NavHostController
     return navController
 }

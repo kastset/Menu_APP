@@ -1,21 +1,23 @@
 [versions]
-agp = "8.7.1"
-kotlin = "2.0.0"
-coreKtx = "1.13.1"
+agp = "8.7.3"
+kotlin = "2.1.0"
+coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
-composeBom = "2024.10.01"
-roomCommon = "2.6.1"
-composeNavigation = "2.8.3"
+composeBom = "2024.12.01"
+composeNavigation = "2.8.5"
 serialization = "1.6.3"
 ktlintVersion = "12.1.0"
-composeAnimation = "1.7.5"
+composeAnimation = "1.7.6"
 
 coilCompose = "2.6.0"
 materail3 = "1.3.1"
+
+room_version = "2.7.0-alpha12"
+ksp_version = "2.1.0-1.0.29"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -32,7 +34,7 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "materail3"}
-androidx-room-common = { group = "androidx.room", name = "room-common", version.ref = "roomCommon" }
+androidx-room-common = { group = "androidx.room", name = "room-common", version.ref = "room_version" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "composeNavigation" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization"}
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "composeAnimation" }
@@ -40,10 +42,18 @@ androidx-compose-animation = { group = "androidx.compose.animation", name = "ani
 # Coil library for Displaying Network images in Jetpack Compose
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 
+#Room
+androidx-room-gradle = { group = "androidx.room", name = "room-gradle-plugin", version.ref = "room_version"}
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room_version"}
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room_version"}
+
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintVersion" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+androidx-room = { id = "androidx.room", version.ref = "room_version" }
+google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp_version"}
 

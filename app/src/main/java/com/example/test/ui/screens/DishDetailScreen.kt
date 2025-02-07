@@ -1,6 +1,6 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalSharedTransitionApi::class)
+@file:OptIn(ExperimentalSharedTransitionApi::class)
 
-package com.example.test.ui.dish
+package com.example.test.ui.screens
 
 import android.content.Intent
 import android.net.Uri
@@ -48,7 +48,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,10 +55,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.test.R
 import com.example.test.model.Dish
+import com.example.test.ui.AppViewModelProvider
 import com.example.test.ui.components.DishRatingIcon
 import com.example.test.ui.components.FavoriteButton
 import com.example.test.ui.components.HeaderText
@@ -67,6 +69,7 @@ import com.example.test.ui.components.ImageLoader
 import com.example.test.ui.components.RatingDialog
 import com.example.test.utils.DishSharedElementKey
 import com.example.test.utils.DishSharedElementType
+import com.example.test.viewModel.BaseDishViewModel
 
 fun <T> spatialExpressiveSpring() =
     spring<T>(
@@ -92,100 +95,106 @@ fun DishDetailScreen(
     animatedContentScope: AnimatedContentScope,
     paddingValues: PaddingValues,
     dish: Dish,
-    viewModel: DishViewModel,
+    viewModel: BaseDishViewModel = viewModel(factory = AppViewModelProvider.Factory),
     onPressBack: () -> Unit,
 ) {
-    val updatedDish = viewModel.dishesFlow.collectAsState().value.find { it.id == dish.id }
-    val isFavorite by rememberUpdatedState(updatedDish?.isFavorite ?: dish.isFavorite)
+    val updatedDish by viewModel.getDishById(dish.id).collectAsState(initial = dish)
 
     val backgroundTint by animateColorAsState(
-        targetValue = if (isFavorite) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceContainerLow,
+        targetValue = if (updatedDish!!.isFavorite) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceContainerLow,
     )
 
     val iconTint by animateColorAsState(
-        targetValue = if (isFavorite) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant,
+        targetValue = if (updatedDish!!.isFavorite) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant,
     )
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { /*TODO*/ },
-                navigationIcon = {
-                    IconButton(
-                        onClick = { onPressBack() },
-                        modifier =
-                            Modifier
-                                .size(48.dp),
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Go Back",
-                            modifier = Modifier.size(24.dp),
-                        )
-                    }
-                },
-                actions = {
-                    FavoriteButton(
-                        modifier =
-                            Modifier
-                                .clip(CircleShape)
-                                .size(48.dp)
-                                .background(backgroundTint),
-                        onFavoriteClick = { viewModel.toggleFavorite(dish.id) },
-                        updatedDish = updatedDish,
-                        iconTint = iconTint,
-                    )
-                },
-                colors =
-                    TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
-            )
-        },
-    ) {
-        val roundedCornerAnim by animatedContentScope.transition
-            .animateDp(label = "rounded corner") { enterExit: EnterExitState ->
-                when (enterExit) {
-                    EnterExitState.PreEnter -> 20.dp
-                    EnterExitState.Visible -> 0.dp
-                    EnterExitState.PostExit -> 20.dp
-                }
-            }
 
-        with(sharedTransitionScope) {
-            Box(
-                modifier =
-                    Modifier
-                        .background(MaterialTheme.colorScheme.background)
-                        .fillMaxSize()
-                        .sharedBounds(
-                            rememberSharedContentState(
-                                key =
-                                    DishSharedElementKey(
-                                        dishId = dish.id,
-                                        origin = dish.name.toString(),
-                                        type = DishSharedElementType.Bounds,
-                                    ),
-                            ),
-                            animatedContentScope,
-                            clipInOverlayDuringTransition =
-                                OverlayClip(RoundedCornerShape(roundedCornerAnim)),
-                            boundsTransform = dishDetailBoundsTransform,
-                            exit = fadeOut(nonSpatialExpressiveSpring()),
-                            enter = fadeIn(nonSpatialExpressiveSpring()),
-                        )
-                        .padding(
-                            top = it.calculateTopPadding(),
-                            bottom = paddingValues.calculateBottomPadding(),
+    with(sharedTransitionScope) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    modifier =
+                        Modifier.renderInSharedTransitionScopeOverlay(
+                            zIndexInOverlay = 1f,
                         ),
-            ) {
-                BasicDishInfo(
-                    sharedTransitionScope = sharedTransitionScope,
-                    animatedContentScope = animatedContentScope,
-                    dish = dish,
-                    updateDish = updatedDish,
-                ) { rating ->
-                    viewModel.toggleRating(dish.id, rating)
+                    title = {},
+                    navigationIcon = {
+                        IconButton(
+                            onClick = { onPressBack() },
+                            modifier =
+                                Modifier
+                                    .size(48.dp),
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Go Back",
+                                modifier = Modifier.size(24.dp),
+                            )
+                        }
+                    },
+                    actions = {
+                        FavoriteButton(
+                            modifier =
+                                Modifier
+                                    .clip(CircleShape)
+                                    .size(48.dp)
+                                    .background(backgroundTint),
+                            onFavoriteClick = { viewModel.toggleFavorite(dish.id) },
+                            updatedDish = updatedDish,
+                            iconTint = iconTint,
+                        )
+                    },
+                    colors =
+                        TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
+                )
+            },
+        ) {
+            val roundedCornerAnim by animatedContentScope.transition
+                .animateDp(label = "rounded corner") { enterExit: EnterExitState ->
+                    when (enterExit) {
+                        EnterExitState.PreEnter -> 20.dp
+                        EnterExitState.Visible -> 0.dp
+                        EnterExitState.PostExit -> 20.dp
+                    }
+                }
+
+            with(sharedTransitionScope) {
+                Box(
+                    modifier =
+                        Modifier
+                            .background(MaterialTheme.colorScheme.background)
+                            .fillMaxSize()
+                            .sharedBounds(
+                                rememberSharedContentState(
+                                    key =
+                                        DishSharedElementKey(
+                                            dishId = dish.id,
+                                            origin = dish.name,
+                                            type = DishSharedElementType.Bounds,
+                                        ),
+                                ),
+                                animatedContentScope,
+                                clipInOverlayDuringTransition =
+                                    OverlayClip(RoundedCornerShape(roundedCornerAnim)),
+                                boundsTransform = dishDetailBoundsTransform,
+                                exit = fadeOut(nonSpatialExpressiveSpring()),
+                                enter = fadeIn(nonSpatialExpressiveSpring()),
+                            )
+                            .padding(
+                                top = it.calculateTopPadding(),
+                                bottom = paddingValues.calculateBottomPadding(),
+                            ),
+                ) {
+                    BasicDishInfo(
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedContentScope = animatedContentScope,
+                        dish = dish,
+                        updateDish = updatedDish,
+                    ) { rating ->
+                        viewModel.toggleRating(dish.id, rating)
+                    }
                 }
             }
         }
@@ -229,7 +238,7 @@ fun BasicDishInfo(
                                 key =
                                     DishSharedElementKey(
                                         dishId = dish.id,
-                                        origin = dish.name.toString(),
+                                        origin = dish.name,
                                         type = DishSharedElementType.Title,
                                     ),
                             ),
@@ -265,7 +274,7 @@ fun BasicDishInfo(
                                     key =
                                         DishSharedElementKey(
                                             dishId = dish.id,
-                                            origin = dish.name.toString(),
+                                            origin = dish.name,
                                             type = DishSharedElementType.Image,
                                         ),
                                 ),
@@ -307,7 +316,7 @@ fun OpenLinkButton(
         colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
     ) {
         Text(
-            "Рецепт",
+            text = stringResource(R.string.recipe),
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onPrimary,
         )
@@ -350,7 +359,7 @@ fun Feedback(
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background),
     ) {
         HeaderText(
-            text = "Ваша оценка",
+            text = stringResource(R.string.your_rating),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.align(Alignment.CenterHorizontally),
             textColor = MaterialTheme.colorScheme.onSurface,
@@ -363,7 +372,7 @@ fun Feedback(
                 elevation = ButtonDefaults.elevatedButtonElevation(4.dp),
             ) {
                 Text(
-                    text = "Оценить",
+                    text = stringResource(R.string.rate),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
@@ -402,7 +411,7 @@ fun CookedPrepTime() {
                 .wrapContentWidth(Alignment.Start),
     ) {
         HeaderText(
-            text = "Время приготовления",
+            text = stringResource(R.string.cooked_time),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.wrapContentWidth(align = Alignment.CenterHorizontally),
             textColor = MaterialTheme.colorScheme.onSurface,

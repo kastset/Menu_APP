@@ -2,6 +2,7 @@
     ExperimentalSharedTransitionApi::class,
     ExperimentalSharedTransitionApi::class,
     ExperimentalSharedTransitionApi::class,
+    ExperimentalSharedTransitionApi::class,
 )
 
 package com.example.test.ui.navigation
@@ -19,17 +20,15 @@ import androidx.navigation.toRoute
 import com.example.test.model.Dish
 import com.example.test.ui.bottombar.FavoriteDishListScreen
 import com.example.test.ui.bottombar.MenuScreen
-import com.example.test.ui.dish.DishDetailScreen
-import com.example.test.ui.dish.DishListScreen
-import com.example.test.ui.dish.DishViewModel
 import com.example.test.ui.home.MainScreen
+import com.example.test.ui.screens.DishDetailScreen
+import com.example.test.ui.screens.DishListScreen
 import kotlin.reflect.typeOf
 
 @Composable
 fun AppNavHost(
     gridState: LazyListState,
     navController: NavHostController,
-    viewModel: DishViewModel,
     paddingValues: PaddingValues,
 ) {
     SharedTransitionLayout {
@@ -39,7 +38,6 @@ fun AppNavHost(
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedContentScope = this@composable,
                     paddingValues = paddingValues,
-                    viewModel = viewModel,
                     onTypeClick = { type ->
                         navController.navigate(
                             NavRoute.DishListScreen(type),
@@ -60,7 +58,6 @@ fun AppNavHost(
                         animatedContentScope = this@composable,
                         paddingValues = paddingValues,
                         type = type,
-                        viewModel,
                         onDishClick = { dish ->
                             navController.navigate(NavRoute.DishDetailScreen(dish))
                         },
@@ -77,7 +74,6 @@ fun AppNavHost(
                     animatedContentScope = this@composable,
                     paddingValues = paddingValues,
                     dish = dish,
-                    viewModel = viewModel,
                     onPressBack = { navController.navigateUp() },
                 )
             }
@@ -89,7 +85,6 @@ fun AppNavHost(
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedContentScope = this@composable,
                     paddingValues = paddingValues,
-                    viewModel = viewModel,
                     onDishClick = { dish ->
                         navController.navigate(NavRoute.DishDetailScreen(dish))
                     },
@@ -104,7 +99,6 @@ fun AppNavHost(
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedContentScope = this@composable,
                     paddingValues = paddingValues,
-                    viewModel = viewModel,
                     onDishClick = { dish ->
                         navController.navigate(NavRoute.DishDetailScreen(dish))
                     },

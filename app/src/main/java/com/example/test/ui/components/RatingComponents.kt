@@ -1,9 +1,12 @@
 package com.example.test.ui.components
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
@@ -21,11 +24,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.test.R
 import com.example.test.model.Dish
+import com.example.test.ui.theme.TestTheme
 
 @Composable
 fun DishRatingIcon(
@@ -44,13 +53,13 @@ fun DishRatingIcon(
         if (selectedRating == 0) {
             Icon(
                 imageVector = Icons.Default.Star,
-                contentDescription = "Rate Dish",
+                contentDescription = stringResource(R.string.rate_dish),
                 tint = MaterialTheme.colorScheme.secondary,
             )
         } else {
             Icon(
                 Icons.Filled.Star,
-                contentDescription = "Rate Dish",
+                contentDescription = stringResource(R.string.rate_dish),
                 modifier =
                     Modifier
                         .size(24.dp)
@@ -92,7 +101,14 @@ fun RatingDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        title = { Text("Rate this dish") },
+        title = {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(text = stringResource(R.string.rate_this_dish))
+            }
+        },
         text = {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -110,16 +126,76 @@ fun RatingDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Done")
+            fun String.toColor() = Color(android.graphics.Color.parseColor(this))
+            val lightGreen = "#b7d9b1".toColor()
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                TextButton(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(MaterialTheme.shapes.large)
+                            .background(lightGreen),
+                    onClick = onDismiss,
+                ) {
+                    Text(
+                        style =
+                            TextStyle(
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                            ),
+                        text = stringResource(R.string.done),
+                    )
+                }
+            }
+        },
+        dismissButton = {
+            val dishIsRated: Boolean = currentRating > 0
+            if (dishIsRated) {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    TextButton(
+                        onClick = {
+                            onRatingSelected(0)
+                            onDismiss
+                        },
+                    ) {
+                        Text(
+                            text = stringResource(R.string.delete_rating),
+                            color = Color.Red,
+                        )
+                    }
+                }
             }
         },
     )
 }
 
-// Пример превью для быстрой проверки UI
-@Preview
+@Preview(
+    name = "Light theme",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
+)
+@Preview(
+    name = "Dark theme",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
 @Composable
 fun RatingDialogPreview() {
-    RatingDialog(currentRating = 3, onRatingSelected = {}, onDismiss = {})
+    TestTheme {
+        RatingDialog(
+            currentRating = 3,
+            onRatingSelected = {},
+            onDismiss = {},
+        )
+    }
 }

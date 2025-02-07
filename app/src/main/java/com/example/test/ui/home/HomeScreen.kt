@@ -1,12 +1,19 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class)
+@file:OptIn(
+    ExperimentalSharedTransitionApi::class,
+    ExperimentalAnimationApi::class,
+    ExperimentalSharedTransitionApi::class,
+)
 
 package com.example.test.ui.home
 
-import android.annotation.SuppressLint
-import android.content.res.Configuration
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.with
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +21,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -45,124 +53,156 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.test.R
 import com.example.test.model.Dish
+import com.example.test.ui.AppViewModelProvider
 import com.example.test.ui.components.HeaderText
+import com.example.test.ui.components.ListOfCard
 import com.example.test.ui.components.TopBarContent
-import com.example.test.ui.dish.DishViewModel
-import com.example.test.ui.dish.ListTypeCard
-import com.example.test.ui.theme.TestTheme
+import kotlinx.coroutines.flow.filterNotNull
+import com.example.test.viewModel.HomeViewModel as HomeViewModel1
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedVisibilityScope,
     paddingValues: PaddingValues,
-    viewModel: DishViewModel,
+    viewModel: HomeViewModel1 = viewModel(factory = AppViewModelProvider.Factory),
     onTypeClick: (String) -> Unit,
     onDishClick: (Dish) -> Unit,
 ) {
-    val allDish by viewModel.dishesFullList.collectAsState()
+    val allDish by viewModel.listOfDish.collectAsState()
     val searchText by viewModel.searchText.collectAsState()
 
-    var isSearch by remember { mutableStateOf(true) }
+    var isSearch by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    TopBarContent(
-                        isSearch = isSearch,
-                        searchText = searchText,
-                        onSearchTextChange = viewModel::onSearchTextChange,
-                        screenTitle = "Категории",
-                    )
-                },
-                actions = {
-                    IconButton(onClick = { isSearch = !isSearch }) {
-                        Icon(
-                            Icons.Filled.Search,
-                            contentDescription = "Поиск",
-                        )
-                    }
-                },
-                navigationIcon = {
-                    if (!isSearch) {
-                        IconButton(
-                            onClick = {
+    with(sharedTransitionScope) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    modifier =
+                        Modifier.renderInSharedTransitionScopeOverlay(
+                            zIndexInOverlay = 1f,
+                        ),
+                    title = {
+                        TopBarContent(
+                            isSearch = isSearch,
+                            searchText = searchText,
+                            onSearchTextChange = viewModel::onSearchTextChange,
+                            screenTitle = stringResource(R.string.home),
+                            {
+                                if (isSearch) viewModel.clearSearchText()
                                 isSearch = !isSearch
-                                viewModel.clearSearchText()
                             },
-                            modifier =
-                                Modifier
-                                    .size(48.dp),
-                        ) {
+                        )
+                    },
+                    actions = {
+                        IconButton(onClick = {
+                            if (isSearch) viewModel.clearSearchText()
+                            isSearch = !isSearch
+                        }) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Go Back",
-                                modifier = Modifier.size(24.dp),
+                                Icons.Filled.Search,
+                                contentDescription = stringResource(R.string.search),
                             )
                         }
+                    },
+                    navigationIcon = {
+                        if (isSearch) {
+                            IconButton(
+                                onClick = {
+                                    isSearch = !isSearch
+                                    viewModel.clearSearchText()
+                                },
+                                modifier =
+                                    Modifier
+                                        .size(48.dp),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = stringResource(R.string.go_back),
+                                    modifier = Modifier.size(24.dp),
+                                )
+                            }
+                        }
+                    },
+                    colors =
+                        TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
+                )
+            },
+        ) {
+            AnimatedContent(
+                targetState = isSearch,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(),
+                content = { targetState ->
+                    if (targetState) {
+                        LazyColumn(
+                            modifier =
+                                Modifier
+                                    .fillMaxSize()
+                                    .padding(
+                                        top = it.calculateTopPadding(),
+                                        bottom = paddingValues.calculateBottomPadding(),
+                                    )
+                                    .pointerInput(isSearch) {
+                                        detectTapGestures(onTap = {
+                                            if (isSearch) {
+                                                viewModel.clearSearchText()
+                                                isSearch = !isSearch
+                                            }
+                                        })
+                                    },
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
+                            items(allDish.dishList) { dish ->
+                                Spacer(modifier = Modifier.height(8.dp))
+                                ListOfCard(
+                                    sharedTransitionScope = sharedTransitionScope,
+                                    animatedContentScope = animatedContentScope,
+                                    onDishClick = onDishClick,
+                                    dish = dish,
+                                    getDishById = {
+                                        viewModel.getDishById(dish.id).filterNotNull()
+                                    },
+                                    onFavoriteClick = { viewModel.toggleFavorite(dish.id) },
+                                ) { rating ->
+                                    viewModel.toggleRating(dish.id, rating)
+                                }
+                            }
+                        }
+                    } else {
+                        Column(
+                            modifier =
+                                Modifier
+                                    .background(MaterialTheme.colorScheme.surface)
+                                    .padding(
+                                        top = it.calculateTopPadding(),
+                                        bottom = paddingValues.calculateBottomPadding(),
+                                    )
+                                    .fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                        ) {
+                            ListOfTypeDish(onTypeClick = onTypeClick)
+                        }
+                        Spacer(modifier = Modifier.height(32.dp))
                     }
                 },
-                colors =
-                    TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
+                transitionSpec = {
+                    fadeIn() with fadeOut()
+                },
             )
-        },
-    ) {
-        if (isSearch) {
-            Column(
-                modifier =
-                    Modifier
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(
-                            top = it.calculateTopPadding(),
-                            bottom = paddingValues.calculateBottomPadding(),
-                        )
-                        .fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-            ) {
-                ListOfTypeDish(onTypeClick = onTypeClick)
-            }
-            Spacer(modifier = Modifier.height(32.dp))
-        } else {
-            LazyColumn(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(
-                            top = it.calculateTopPadding(),
-                            bottom = paddingValues.calculateBottomPadding(),
-                        )
-                        .pointerInput(isSearch) {
-                            detectTapGestures(onTap = {
-                                if (!isSearch) {
-                                    isSearch = true
-                                    viewModel.clearSearchText()
-                                }
-                            })
-                        },
-                contentPadding = PaddingValues(horizontal = 16.dp),
-//                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                items(allDish) { dish ->
-                    ListTypeCard(
-                        sharedTransitionScope = sharedTransitionScope,
-                        animatedContentScope = animatedContentScope,
-                        onDishClick = onDishClick,
-                        dish = dish,
-                        viewModel,
-                    )
-                }
-            }
         }
     }
 }
@@ -174,7 +214,7 @@ fun ListOfTypeDish(onTypeClick: (String) -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         HeaderText(
-            text = "List of a dish",
+            text = stringResource(R.string.list_of_a_dish),
             modifier =
                 Modifier
                     .fillMaxWidth()
@@ -191,10 +231,10 @@ fun ListOfTypeDish(onTypeClick: (String) -> Unit) {
 fun DishTypes(onTypeClick: (String) -> Unit) {
     val types =
         listOf(
-            listOf("Завтрак", "Супы"),
-            listOf("Гарнир", "Салаты"),
-            listOf("Мясо/Рыба", "Десерты"),
-            listOf("Напитки", "Закуски"),
+            listOf(stringResource(R.string.breacfast), stringResource(R.string.soup)),
+            listOf(stringResource(R.string.garnish), stringResource(R.string.salad)),
+            listOf(stringResource(R.string.meat_or_fish), stringResource(R.string.desserts)),
+            listOf(stringResource(R.string.drinks), stringResource(R.string.snacks)),
         )
     for (row in types) {
         Row(
@@ -240,23 +280,34 @@ fun FilterButton(
     }
 }
 
-@Preview(
-    name = "Light theme",
-    showBackground = true,
-    showSystemUi = true,
-    uiMode = Configuration.UI_MODE_NIGHT_NO,
-)
-@Preview(
-    name = "Dark theme",
-    showBackground = true,
-    showSystemUi = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-)
-@Composable
-fun MainScreenPreview() {
-    val viewModel = DishViewModel()
-    TestTheme {
-        val paddingValues = PaddingValues(16.dp)
-//        MainScreen(paddingValues = paddingValues, viewModel = viewModel, {}, { })
-    }
-}
+// @Preview(
+//    name = "Light theme",
+//    showBackground = true,
+//    showSystemUi = true,
+//    uiMode = Configuration.UI_MODE_NIGHT_NO,
+// )
+// @Preview(
+//    name = "Dark theme",
+//    showBackground = true,
+//    showSystemUi = true,
+//    uiMode = Configuration.UI_MODE_NIGHT_YES,
+// )
+// @Composable
+// fun MainScreenPreview() {
+//    val viewModel = DishViewModel()
+//    SharedTransitionLayout {
+//        AnimatedVisibility(visible = true) {
+//            TestTheme {
+//                val paddingValues = PaddingValues(16.dp)
+//                MainScreen(
+//                    sharedTransitionScope = this@SharedTransitionLayout,
+//                    animatedContentScope = this,
+//                    paddingValues = paddingValues,
+//                    viewModel = viewModel,
+//                    {},
+//                    {},
+//                )
+//            }
+//        }
+//    }
+// }

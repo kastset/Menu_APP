@@ -8,16 +8,22 @@ plugins {
     alias(libs.plugins.compose.compiler)
 
     id("kotlin-parcelize")
+
+    alias(libs.plugins.androidx.room)
+    alias(libs.plugins.google.devtools.ksp)
+}
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 android {
     namespace = "com.example.test"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.test"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -94,4 +100,9 @@ dependencies {
 
     // Coil library for loading online images to compose
     implementation(libs.coil.compose)
+
+    // Room
+    implementation(libs.androidx.room.gradle)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.runtime)
 }
