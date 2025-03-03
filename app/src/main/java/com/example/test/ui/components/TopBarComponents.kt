@@ -10,14 +10,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.test.R
@@ -32,6 +39,14 @@ fun TopBarContent(
 ) {
     val width by animateDpAsState(targetValue = if (isSearch) 300.dp else 0.dp)
     val titleWidth by animateDpAsState(targetValue = if (!isSearch) 300.dp else 0.dp)
+
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(isSearch) {
+        if (isSearch) {
+            focusRequester.requestFocus()
+        }
+    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -73,9 +88,17 @@ fun TopBarContent(
                 TextField(
                     value = searchText,
                     onValueChange = onSearchTextChange,
-                    placeholder = { Text(stringResource(R.string.enter_text)) },
+                    shape = RoundedCornerShape(30.dp),
+                    colors =
+                        TextFieldDefaults.colors(
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                        ),
+                    singleLine = true,
                     modifier =
-                        Modifier.fillMaxWidth(),
+                        Modifier.fillMaxWidth()
+                            .focusRequester(focusRequester),
+                    placeholder = { Text(stringResource(R.string.enter_text)) },
                 )
             }
         }

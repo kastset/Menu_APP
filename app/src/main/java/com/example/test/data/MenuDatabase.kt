@@ -43,6 +43,5 @@ abstract class MenuDatabase : RoomDatabase() {
                 dao.insertDishes(newDish)
             }
         }
-
     }
 }
