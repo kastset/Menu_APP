@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Test</string>
+    <string name="app_name">Домашнее меню</string>
     <string name="home">Категории</string>
     <string name="menu">Меню</string>
     <string name="favorites">Любимые</string>

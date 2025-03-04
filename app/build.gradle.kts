@@ -17,11 +17,11 @@ room {
 }
 
 android {
-    namespace = "com.example.test"
+    namespace = "com.example.homeMenu"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.test"
+        applicationId = "com.example.homeMenu"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
