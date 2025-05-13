@@ -176,7 +176,7 @@ fun DishEditScreen(
                             Toast.makeText(context, "Проверьте заполнены ли поля", Toast.LENGTH_SHORT).show()
                         } else {
                             viewModel.updateDish()
-                            onDeleteClick(dishType)
+                            onSaveBack()
                         }
                     },
                 ) {
