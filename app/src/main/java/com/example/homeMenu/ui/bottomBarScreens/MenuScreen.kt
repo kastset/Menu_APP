@@ -1,4 +1,6 @@
-package com.example.homeMenu.ui.bottombar
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
+package com.example.homeMenu.ui.bottomBarScreens
 
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -12,27 +14,31 @@ import com.example.homeMenu.R
 import com.example.homeMenu.model.Dish
 import com.example.homeMenu.ui.AppViewModelProvider
 import com.example.homeMenu.ui.components.ListOfDish
-import com.example.homeMenu.viewModel.FavoriteViewModel
+import com.example.homeMenu.viewModel.AuthViewModel
+import com.example.homeMenu.viewModel.MenuViewModel
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun FavoriteDishListScreen(
+fun MenuScreen(
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedVisibilityScope,
     paddingValues: PaddingValues,
     gridState: LazyListState,
-    viewModel1: FavoriteViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    viewModel: MenuViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    authViewModel: AuthViewModel,
     onDishClick: (Dish) -> Unit,
     onPressBack: () -> Unit,
+    onCreateClick: () -> Unit,
 ) {
     ListOfDish(
         sharedTransitionScope = sharedTransitionScope,
         animatedContentScope = animatedContentScope,
         paddingValues = paddingValues,
-        screenTitle = stringResource(R.string.favorites),
+        screenTitle = stringResource(R.string.all_dish),
         gridState = gridState,
-        viewModel = viewModel1,
+        viewModel = viewModel,
+        authViewModel = authViewModel,
         onDishClick = onDishClick,
         onPressBack = onPressBack,
+        onCreateClick = onCreateClick,
     )
 }

@@ -1,6 +1,7 @@
 package com.example.homeMenu.data
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -10,14 +11,17 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DishDao {
-    //    @Delete
-//    suspend fun delete(dish: Dish)
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDishes(dishes: List<Dish>)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDish(dish: Dish)
+
     @Update
     suspend fun update(dish: Dish)
+
+    @Delete
+    suspend fun delete(dish: Dish)
 
     @Query("SELECT * from dishes")
     suspend fun getAllDishesForUpdateDb(): List<Dish>

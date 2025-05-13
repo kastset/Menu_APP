@@ -11,6 +11,8 @@ plugins {
 
     alias(libs.plugins.androidx.room)
     alias(libs.plugins.google.devtools.ksp)
+
+    alias(libs.plugins.gms)
 }
 room {
     schemaDirectory("$projectDir/schemas")
@@ -105,4 +107,9 @@ dependencies {
     implementation(libs.androidx.room.gradle)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.runtime)
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.auth)
 }

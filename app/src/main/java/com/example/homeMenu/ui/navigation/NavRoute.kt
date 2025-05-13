@@ -26,6 +26,12 @@ sealed class NavRoute {
 
     @Serializable
     data object FavoriteDishListScreen : NavRoute()
+
+    @Serializable
+    data object DishCreationScreen : NavRoute()
+
+    @Serializable
+    data class DishEditScreen(val dish: Dish) : NavRoute()
 }
 
 inline fun <reified T : Parcelable> NavType.Companion.mapper(): NavType<T> {

@@ -6,6 +6,10 @@ import kotlinx.coroutines.flow.Flow
 interface DishesRepository {
     suspend fun updateDish(dish: Dish)
 
+    suspend fun insertDish(dish: Dish)
+
+    suspend fun deleteDish(dish: Dish)
+
     fun getAllDishesStream(): Flow<List<Dish>>
 
     fun getAllFavoriteDishesStream(): Flow<List<Dish>>

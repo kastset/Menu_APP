@@ -62,6 +62,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.homeMenu.R
 import com.example.homeMenu.model.Dish
 import com.example.homeMenu.ui.AppViewModelProvider
+import com.example.homeMenu.ui.components.AddOrEditButton
 import com.example.homeMenu.ui.components.DishRatingIcon
 import com.example.homeMenu.ui.components.FavoriteButton
 import com.example.homeMenu.ui.components.HeaderText
@@ -69,6 +70,7 @@ import com.example.homeMenu.ui.components.ImageLoader
 import com.example.homeMenu.ui.components.RatingDialog
 import com.example.homeMenu.utils.DishSharedElementKey
 import com.example.homeMenu.utils.DishSharedElementType
+import com.example.homeMenu.viewModel.AuthViewModel
 import com.example.homeMenu.viewModel.BaseDishViewModel
 
 fun <T> spatialExpressiveSpring() =
@@ -96,7 +98,9 @@ fun DishDetailScreen(
     paddingValues: PaddingValues,
     dish: Dish,
     viewModel: BaseDishViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    authViewModel: AuthViewModel,
     onPressBack: () -> Unit,
+    onEditClick: (Dish) -> Unit,
 ) {
     val updatedDish by viewModel.getDishById(dish.id).collectAsState(initial = dish)
 
@@ -108,6 +112,7 @@ fun DishDetailScreen(
         targetValue = if (updatedDish!!.isFavorite) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant,
     )
 
+    val isAdmin by authViewModel.isAdmin.collectAsState()
     with(sharedTransitionScope) {
         Scaffold(
             topBar = {
@@ -149,6 +154,19 @@ fun DishDetailScreen(
                             navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         ),
                 )
+            },
+            floatingActionButton = {
+                if (isAdmin) {
+                    AddOrEditButton(
+                        onScreenClick = { onEditClick(dish) },
+                        paddingValues = paddingValues,
+                        descriptionText = "Update a dash",
+                        modifier =
+                            Modifier.renderInSharedTransitionScopeOverlay(
+                                zIndexInOverlay = 1f,
+                            ),
+                    )
+                }
             },
         ) {
             val roundedCornerAnim by animatedContentScope.transition

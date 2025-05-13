@@ -6,6 +6,10 @@ import kotlinx.coroutines.flow.Flow
 class OfflineDishesRepository(private val dishDao: DishDao) : DishesRepository {
     override suspend fun updateDish(dish: Dish) = dishDao.update(dish)
 
+    override suspend fun insertDish(dish: Dish) = dishDao.insertDish(dish)
+
+    override suspend fun deleteDish(dish: Dish) = dishDao.delete(dish)
+
     override fun getAllDishesStream(): Flow<List<Dish>> = dishDao.getAllDishes()
 
     override fun getAllFavoriteDishesStream(): Flow<List<Dish>> = dishDao.getAllFavoriteDishes()

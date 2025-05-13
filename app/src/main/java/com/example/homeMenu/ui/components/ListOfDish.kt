@@ -47,6 +47,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.homeMenu.R
 import com.example.homeMenu.model.Dish
 import com.example.homeMenu.ui.AppViewModelProvider
+import com.example.homeMenu.viewModel.AuthViewModel
 import com.example.homeMenu.viewModel.BaseDishViewModel
 import kotlinx.coroutines.flow.filterNotNull
 
@@ -58,13 +59,16 @@ fun ListOfDish(
     screenTitle: String,
     gridState: LazyListState,
     viewModel: BaseDishViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    authViewModel: AuthViewModel,
     onDishClick: (Dish) -> Unit,
     onPressBack: () -> Unit,
+    onCreateClick: () -> Unit,
 ) {
     val allDish by viewModel.listOfDish.collectAsState()
     val searchText by viewModel.searchText.collectAsState()
 
     var isSearch by remember { mutableStateOf(false) }
+    val isAdmin by authViewModel.isAdmin.collectAsState()
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
@@ -143,6 +147,19 @@ fun ListOfDish(
                         }
                     },
                 )
+            },
+            floatingActionButton = {
+                if (isAdmin) {
+                    AddOrEditButton(
+                        onScreenClick = { onCreateClick() },
+                        paddingValues = paddingValues,
+                        descriptionText = "Create a new Dish",
+                        modifier =
+                            Modifier.renderInSharedTransitionScopeOverlay(
+                                zIndexInOverlay = 1f,
+                            ),
+                    )
+                }
             },
         ) {
             Column(

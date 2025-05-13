@@ -42,8 +42,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.homeMenu.R
 import com.example.homeMenu.model.Dish
 import com.example.homeMenu.ui.AppViewModelProvider
+import com.example.homeMenu.ui.components.AddOrEditButton
 import com.example.homeMenu.ui.components.ListOfCard
 import com.example.homeMenu.ui.components.TopBarContent
+import com.example.homeMenu.viewModel.AuthViewModel
 import com.example.homeMenu.viewModel.TypeListViewModel
 import kotlinx.coroutines.flow.filterNotNull
 
@@ -55,8 +57,10 @@ fun DishListScreen(
     paddingValues: PaddingValues,
     type: String,
     viewModel: TypeListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    authViewModel: AuthViewModel,
     onDishClick: (Dish) -> Unit,
     onPressBack: () -> Unit,
+    onCreateClick: () -> Unit,
 ) {
     val filteredDish by viewModel.listOfDish(type).collectAsState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -64,6 +68,8 @@ fun DishListScreen(
     val searchText by viewModel.searchText.collectAsState()
 
     var isSearch by remember { mutableStateOf(false) }
+
+    val isAdmin by authViewModel.isAdmin.collectAsState()
     with(sharedTransitionScope) {
         Scaffold(
             modifier =
@@ -141,6 +147,19 @@ fun DishListScreen(
                         }
                     },
                 )
+            },
+            floatingActionButton = {
+                if (isAdmin) {
+                    AddOrEditButton(
+                        onScreenClick = { onCreateClick() },
+                        paddingValues = paddingValues,
+                        descriptionText = "Create a new Dish",
+                        modifier =
+                            Modifier.renderInSharedTransitionScopeOverlay(
+                                zIndexInOverlay = 1f,
+                            ),
+                    )
+                }
             },
         ) {
             Column(

@@ -6,7 +6,10 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.homeMenu.MenuApplication
+import com.example.homeMenu.viewModel.AuthViewModel
 import com.example.homeMenu.viewModel.BaseDishViewModel
+import com.example.homeMenu.viewModel.DishCreationViewModel
+import com.example.homeMenu.viewModel.DishEditViewModel
 import com.example.homeMenu.viewModel.FavoriteViewModel
 import com.example.homeMenu.viewModel.HomeViewModel
 import com.example.homeMenu.viewModel.MenuViewModel
@@ -37,6 +40,19 @@ object AppViewModelProvider {
             }
             initializer {
                 HomeViewModel(
+                    menuApplication().container.dishesRepository,
+                )
+            }
+            initializer {
+                AuthViewModel(
+                    menuApplication().container.authRepository,
+                )
+            }
+            initializer {
+                DishCreationViewModel(menuApplication().container.dishesRepository)
+            }
+            initializer {
+                DishEditViewModel(
                     this.createSavedStateHandle(),
                     menuApplication().container.dishesRepository,
                 )

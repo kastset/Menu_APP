@@ -18,11 +18,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.example.homeMenu.model.Dish
-import com.example.homeMenu.ui.bottombar.FavoriteDishListScreen
-import com.example.homeMenu.ui.bottombar.MenuScreen
-import com.example.homeMenu.ui.home.MainScreen
+import com.example.homeMenu.ui.bottomBarScreens.FavoriteDishListScreen
+import com.example.homeMenu.ui.bottomBarScreens.MenuScreen
+import com.example.homeMenu.ui.homeScreen.MainScreen
+import com.example.homeMenu.ui.screens.DishCreationScreen
 import com.example.homeMenu.ui.screens.DishDetailScreen
+import com.example.homeMenu.ui.screens.DishEditScreen
 import com.example.homeMenu.ui.screens.DishListScreen
+import com.example.homeMenu.viewModel.AuthViewModel
 import kotlin.reflect.typeOf
 
 @Composable
@@ -30,6 +33,7 @@ fun AppNavHost(
     gridState: LazyListState,
     navController: NavHostController,
     paddingValues: PaddingValues,
+    authViewModel: AuthViewModel,
 ) {
     SharedTransitionLayout {
         NavHost(navController = navController, startDestination = NavRoute.MainScreen) {
@@ -38,6 +42,7 @@ fun AppNavHost(
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedContentScope = this@composable,
                     paddingValues = paddingValues,
+                    authViewModel = authViewModel,
                     onTypeClick = { type ->
                         navController.navigate(
                             NavRoute.DishListScreen(type),
@@ -45,6 +50,9 @@ fun AppNavHost(
                     },
                     onDishClick = { dish ->
                         navController.navigate(NavRoute.DishDetailScreen(dish))
+                    },
+                    onCreateClick = {
+                        navController.navigate(NavRoute.DishCreationScreen)
                     },
                 )
             }
@@ -58,10 +66,12 @@ fun AppNavHost(
                         animatedContentScope = this@composable,
                         paddingValues = paddingValues,
                         type = type,
+                        authViewModel = authViewModel,
                         onDishClick = { dish ->
                             navController.navigate(NavRoute.DishDetailScreen(dish))
                         },
                         onPressBack = { navController.navigateUp() },
+                        onCreateClick = { navController.navigate(NavRoute.DishCreationScreen) },
                     )
                 }
             }
@@ -73,8 +83,10 @@ fun AppNavHost(
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedContentScope = this@composable,
                     paddingValues = paddingValues,
+                    authViewModel = authViewModel,
                     dish = dish,
                     onPressBack = { navController.navigateUp() },
+                    onEditClick = { navController.navigate(NavRoute.DishEditScreen(dish)) },
                 )
             }
             composable<NavRoute.MenuScreen>(
@@ -85,10 +97,12 @@ fun AppNavHost(
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedContentScope = this@composable,
                     paddingValues = paddingValues,
+                    authViewModel = authViewModel,
                     onDishClick = { dish ->
                         navController.navigate(NavRoute.DishDetailScreen(dish))
                     },
                     onPressBack = { navController.popBackStack() },
+                    onCreateClick = { navController.navigate(NavRoute.DishCreationScreen) },
                 )
             }
             composable<NavRoute.FavoriteDishListScreen>(
@@ -99,10 +113,33 @@ fun AppNavHost(
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedContentScope = this@composable,
                     paddingValues = paddingValues,
+                    authViewModel = authViewModel,
                     onDishClick = { dish ->
                         navController.navigate(NavRoute.DishDetailScreen(dish))
                     },
                     onPressBack = { navController.popBackStack() },
+                    onCreateClick = { navController.navigate(NavRoute.DishCreationScreen) },
+                )
+            }
+            composable<NavRoute.DishCreationScreen>(
+                typeMap = mapOf(typeOf<Dish>() to NavType.mapper<Dish>()),
+            ) {
+                DishCreationScreen(
+                    paddingValues = paddingValues,
+                    onPressBack = { navController.popBackStack() },
+                    onDishSave = { navController.popBackStack() },
+                )
+            }
+            composable<NavRoute.DishEditScreen>(
+                typeMap = mapOf(typeOf<Dish>() to NavType.mapper<Dish>()),
+            ) {
+                DishEditScreen(
+                    paddingValues = paddingValues,
+                    onPressBack = { navController.popBackStack() },
+                    onSaveBack = { navController.popBackStack() },
+                    onDeleteClick = { type ->
+                        navController.navigate(NavRoute.DishListScreen(type))
+                    },
                 )
             }
         }

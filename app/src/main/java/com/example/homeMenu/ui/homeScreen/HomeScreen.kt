@@ -4,7 +4,7 @@
     ExperimentalSharedTransitionApi::class,
 )
 
-package com.example.homeMenu.ui.home
+package com.example.homeMenu.ui.homeScreen
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -59,11 +59,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.homeMenu.R
 import com.example.homeMenu.model.Dish
 import com.example.homeMenu.ui.AppViewModelProvider
+import com.example.homeMenu.ui.components.AddOrEditButton
 import com.example.homeMenu.ui.components.HeaderText
 import com.example.homeMenu.ui.components.ListOfCard
 import com.example.homeMenu.ui.components.TopBarContent
+import com.example.homeMenu.viewModel.AuthViewModel
+import com.example.homeMenu.viewModel.HomeViewModel
 import kotlinx.coroutines.flow.filterNotNull
-import com.example.homeMenu.viewModel.HomeViewModel as HomeViewModel1
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,12 +73,15 @@ fun MainScreen(
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedVisibilityScope,
     paddingValues: PaddingValues,
-    viewModel: HomeViewModel1 = viewModel(factory = AppViewModelProvider.Factory),
+    dishViewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    authViewModel: AuthViewModel,
     onTypeClick: (String) -> Unit,
     onDishClick: (Dish) -> Unit,
+    onCreateClick: () -> Unit,
 ) {
-    val allDish by viewModel.listOfDish.collectAsState()
-    val searchText by viewModel.searchText.collectAsState()
+    val allDish by dishViewModel.listOfDish.collectAsState()
+    val searchText by dishViewModel.searchText.collectAsState()
+    val isAdmin by authViewModel.isAdmin.collectAsState()
 
     var isSearch by remember { mutableStateOf(false) }
 
@@ -92,17 +97,17 @@ fun MainScreen(
                         TopBarContent(
                             isSearch = isSearch,
                             searchText = searchText,
-                            onSearchTextChange = viewModel::onSearchTextChange,
+                            onSearchTextChange = dishViewModel::onSearchTextChange,
                             screenTitle = stringResource(R.string.home),
                             {
-                                if (isSearch) viewModel.clearSearchText()
+                                if (isSearch) dishViewModel.clearSearchText()
                                 isSearch = !isSearch
                             },
                         )
                     },
                     actions = {
                         IconButton(onClick = {
-                            if (isSearch) viewModel.clearSearchText()
+                            if (isSearch) dishViewModel.clearSearchText()
                             isSearch = !isSearch
                         }) {
                             Icon(
@@ -116,7 +121,7 @@ fun MainScreen(
                             IconButton(
                                 onClick = {
                                     isSearch = !isSearch
-                                    viewModel.clearSearchText()
+                                    dishViewModel.clearSearchText()
                                 },
                                 modifier =
                                     Modifier
@@ -138,6 +143,19 @@ fun MainScreen(
                         ),
                 )
             },
+            floatingActionButton = {
+                if (isAdmin) {
+                    AddOrEditButton(
+                        onScreenClick = { onCreateClick() },
+                        paddingValues = paddingValues,
+                        descriptionText = "Create a new Dish",
+                        modifier =
+                            Modifier.renderInSharedTransitionScopeOverlay(
+                                zIndexInOverlay = 1f,
+                            ),
+                    )
+                }
+            },
         ) {
             AnimatedContent(
                 targetState = isSearch,
@@ -158,7 +176,7 @@ fun MainScreen(
                                     .pointerInput(isSearch) {
                                         detectTapGestures(onTap = {
                                             if (isSearch) {
-                                                viewModel.clearSearchText()
+                                                dishViewModel.clearSearchText()
                                                 isSearch = !isSearch
                                             }
                                         })
@@ -174,11 +192,11 @@ fun MainScreen(
                                     onDishClick = onDishClick,
                                     dish = dish,
                                     getDishById = {
-                                        viewModel.getDishById(dish.id).filterNotNull()
+                                        dishViewModel.getDishById(dish.id).filterNotNull()
                                     },
-                                    onFavoriteClick = { viewModel.toggleFavorite(dish.id) },
+                                    onFavoriteClick = { dishViewModel.toggleFavorite(dish.id) },
                                 ) { rating ->
-                                    viewModel.toggleRating(dish.id, rating)
+                                    dishViewModel.toggleRating(dish.id, rating)
                                 }
                             }
                         }
